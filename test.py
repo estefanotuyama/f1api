@@ -1,7 +1,8 @@
 from urllib.request import urlopen
 import json
-BASE_URL= 'https://api.openf1.org/v1/'
-response = urlopen('https://api.openf1.org/v1/laps?session_key=9161&driver_number=63')
+from db_populate import get_data, URL_BASE
+
+"""response = urlopen('https://api.openf1.org/v1/laps?session_key=9161&driver_number=63')
 data = json.loads(response.read().decode('utf-8'))
 
 def get_response(search_url):
@@ -18,9 +19,9 @@ def get_drivers_from_session_key(session_key):
     search_url = BASE_URL + f'drivers?session_key={session_key}'
     data = get_response(search_url)
     return data
-
+"""
 ##### ---printing---
-print(get_drivers_from_session_key(get_session_key_from_country_year_session_name("Belgium", 2024, "Race")))
+#print(get_drivers_from_session_key(get_session_key_from_country_year_session_name("Belgium", 2024, "Race")))
 
 """
 DB
@@ -31,11 +32,31 @@ TABLE: EVENT
 LOCATION, YEAR, MEETING_KEY, SESSIONS{session_key, session_type}
 
 TABLE: DRIVERS
-PK(ACRONYM+YEAR), NAME, LAST_NAME, ACRONYM, NUMBER, TEAM, YEAR
+PK(ACRONYM+SESSION_KEY), SESSION_KEY, NAME, LAST_NAME, ACRONYM, NUMBER, TEAM, HEADSHOT_URL
 
 TABLE: SESSIONS
-SESSION_KEY, SESSION_TYPE
+LOCATION, SESSION_KEY, SESSION_TYPE, SESSION_NAME, DATE
 
 TABLE: SESSION_RESULT
 SESSION_KEY, DRIVER(ACRONYM), FINAL_POSITION
 """
+def get_sessions():
+    url = URL_BASE + f'sessions?year=2024'
+    data = get_data(url)
+    for datapoint in data:
+        print(datapoint)
+
+def get_drivers():
+    url = URL_BASE + 'drivers'
+    data = get_data(url)
+    for datapoint in data:
+        print(datapoint)
+
+def get_laps():
+    url = URL_BASE + 'laps'
+    data = get_data(url)
+    for datapoint in data:
+        print(datapoint)
+#get_sessions()
+#get_drivers()
+get_laps()

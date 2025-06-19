@@ -2,7 +2,9 @@ from urllib.request import urlopen
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlmodel import Session
 from database import engine
+from models.drivers import Driver
 from models.events import Event
+from models.sessions import F1Session
 import logging
 import json
 
@@ -23,7 +25,12 @@ def populate_db():
     #populate events
     add_events_data()
     logger.info("Events added successfully!")
-    #populate
+    #populate sessions
+    add_sessions_data()
+    logger.info("Sessions added successfully!")
+    #populate drivers
+    add_drivers_data()
+    logger.info("Drivers added successfully!")
 
 """
 class Driver(SQLModel, table=True):
@@ -67,6 +74,65 @@ def add_events_data():
             except SQLAlchemyError as e:
                 session.rollback()
                 logger.error(f"Database error: {e}")
+
+# SESSIONS POPULATE(2024)
+def add_sessions_data():
+    url = URL_BASE + f'sessions?year=2024'
+    data = get_data(url)
+    with Session(engine) as session:
+        for data_point in data:
+            try:
+                f1session = F1Session(
+                    location=data_point['location'],
+                    session_key=data_point['session_key'],
+                    session_type=data_point['session_type'],
+                    session_name=data_point['session_name'],
+                    date=data_point['date_start']
+                )
+                existing = session.get(F1Session, data_point['session_key'])
+                if existing:
+                    continue
+                session.add(f1session)
+                session.commit()
+                logger.info("Session added successfully ")
+            except IntegrityError:
+                session.rollback()
+                logger.error(f"Duplicate or constraint error for session_key={data_point['meeting_key']}")
+            except SQLAlchemyError as e:
+                session.rollback()
+                logger.error(f"Database error: {e}")
+
+#DRIVERS POPULATE(ALL)
+def add_drivers_data():
+    url = URL_BASE + 'drivers'
+    data = get_data(url)
+    with Session(engine ) as session:
+        for data_point in data:
+            try:
+                driver = Driver(
+                    session_key=data_point['session_key'],
+                    first_name=data_point['first_name'],
+                    last_name=data_point['last_name'],
+                    name_acronym=data_point['name_acronym'],
+                    number=data_point['driver_number'],
+                    team=data_point['team_name'],
+                    headshot_url=data_point['headshot_url']
+                )
+                existing = session.get(Driver, (data_point['name_acronym'], data_point['session_key']))
+                if existing:
+                    continue
+                session.add(driver)
+                session.commit()
+                logger.info(f"Driver with PK {data_point['name_acronym']+str(data_point['session_key'])} added successfully" )
+            except IntegrityError:
+                session.rollback()
+                logger.error(f"Duplicate or constraint error for PK={data_point['name_acronym']+str(data_point['session_key'])}")
+            except SQLAlchemyError as e:
+                session.rollback()
+                logger.error(f"Database error: {e}")
+
+#SESSION LAPS POPULATE(2024):
+
 
 if __name__ == "__main__":
     from database import create_db_and_tables
