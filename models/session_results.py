@@ -1,5 +1,3 @@
-from email.policy import default
-
 from sqlmodel import SQLModel, Field
 
 

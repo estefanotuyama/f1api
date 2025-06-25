@@ -13,7 +13,7 @@ from models.sessions import F1Session
 import logging
 import json
 
-from models.sesson_laps import SessionLaps
+from models.session_laps import SessionLaps
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
