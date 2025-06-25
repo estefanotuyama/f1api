@@ -2,14 +2,15 @@ from fastapi.testclient import TestClient
 from main import app
 
 client = TestClient(app)
+year = 2024
 
 def test_get_events_by_year():
-    response = client.get("/events/2024")
+    response = client.get(f"/events/{year}")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
     assert all("meeting_key" in event for event in data)
 
-    print("2024 Events:")
+    print(f"{year} Events:")
     for event in data:
         print(f"{event['meeting_official_name']} -> Meeting Key: {event['meeting_key']}")

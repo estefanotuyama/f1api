@@ -96,6 +96,7 @@ def add_sessions_data():
                 try:
                     f1session = F1Session(
                         location=data_point['location'],
+                        meeting_key=data_point['meeting_key'],
                         session_key=data_point['session_key'],
                         session_type=data_point['session_type'],
                         session_name=data_point['session_name'],
@@ -168,7 +169,7 @@ def add_laps_data():
                         lap_number=datapoint['lap_number'],
                         is_pit_out_lap=datapoint['is_pit_out_lap'],
                         lap_time=datapoint['lap_duration'] or 0.0,
-                        st_speed=datapoint['st_speed']
+                        st_speed=datapoint['st_speed'] or 0
                     )
                     print(datapoint['lap_duration'])
                     session.add(lap_info)

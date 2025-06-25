@@ -23,14 +23,12 @@ A FastAPI backend for exploring Formula 1 driver data, sessions, lap times, and 
 ```sh
 F1Project/
 ├── main.py           # FastAPI app entry point
-├── database.py       # Engine + session setup
-├── db_populate.py    # Script to populate DB from OpenF1
 ├── models/           # SQLModel ORM classes
-├── api/              # API route definitions (WIP)
-├── crud/             # DB access logic (WIP)
-├── schemas/          # Pydantic models for request/response (WIP)
+├── api/              # API route definitions
+├── crud/             # DB access logic
+├── db/               # DB definitions and DB utilities
+├── schemas/          # Pydantic models for request/response
 ├── utils/            # Utility files like logging setup
-├── f1.db             # SQLite database (ignored in Git)
 └── .env              # Environment variables (ignored in Git)
 ```
 
@@ -93,11 +91,12 @@ Now, you can access the API documentation:
 
 ## 📌 TODO
 
-  - [ ] Add driver, session, and lap time API routes
-  - [ ] Implement pagination and filtering for API endpoints
-  - [ ] Write tests using `pytest`
-  - [ ] Convert to PostgreSQL (optional)
-  - [ ] Deploy to a cloud service (Render, Vercel, Fly.io)
+  - [ ] Add driver, session, and lap time API routes (in progress)
+  - [ ] Implement filtering for API endpoints
+  - [x] Write tests using `pytest`
+  - [ ] Convert to PostgreSQL
+  - [ ] Deploy to a cloud service
+  - [ ] Add Front-End
 
 -----
 
