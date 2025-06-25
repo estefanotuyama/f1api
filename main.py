@@ -1,8 +1,12 @@
 from fastapi import FastAPI
-from database import create_db_and_tables
+
+from api import events
+from db.database import create_db_and_tables
 
 app = FastAPI(title="F1 Stats",
               description="Simple app for F1 statistics")
+
+app.include_router(events.router)
 
 @app.on_event("startup")
 def on_startup():
@@ -11,4 +15,4 @@ def on_startup():
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Welcome to F1 Stats!"}
