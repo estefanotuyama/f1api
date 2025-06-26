@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-
 from api import events, sessions, drivers
 from db.database import create_db_and_tables
 
