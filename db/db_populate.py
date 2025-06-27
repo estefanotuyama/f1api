@@ -6,20 +6,15 @@ from sqlmodel import Session
 
 import db_utils
 from database import engine
-from db_utils import get_session_keys
+from db_utils import get_session_keys, logger
 from models.drivers import Driver
 from models.events import Event
 from models.sessions import F1Session
-import logging
 import json
 
 from models.session_laps import SessionLaps
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
+
 URL_BASE = "https://api.openf1.org/v1/"
 YEARS = [2023, 2024, 2025]
 
