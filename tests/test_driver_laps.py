@@ -1,8 +1,15 @@
-from crud.lap import get_driver_lap_times
-from db.database import get_session
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+DRIVER_NUMBER = 16 #CHARLES LECLERC
+SESSION_KEY = 9519 #MONACO 2024 QUALIFYING
 
 def test_read_driver_laps():
-    with next(get_session()) as session:
-        lap_times = get_driver_lap_times(session, 9519, 16)
-        assert lap_times is not None
-        print(f"Lap times: {lap_times}")
+    response = client.get(f'/laps/{SESSION_KEY}/{DRIVER_NUMBER}')
+    assert response.status_code == 200
+
+    data = response.json()
+
+    print(f"Driver lap data: {data}")

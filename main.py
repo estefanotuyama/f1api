@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api import events, sessions, drivers
+from api import events, sessions, drivers, laps
 from db.database import create_db_and_tables
 
 app = FastAPI(title="F1 Stats",
@@ -8,6 +8,7 @@ app = FastAPI(title="F1 Stats",
 app.include_router(events.router)
 app.include_router(sessions.router)
 app.include_router(drivers.router)
+app.include_router(laps.router)
 
 @app.on_event("startup")
 def on_startup():

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class LapRead(BaseModel):
     lap_number: int
-    time: int
+    time: float
     speed_trap: int
     is_pit_out_lap: bool
     compound: str

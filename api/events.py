@@ -5,5 +5,5 @@ from db.db_utils import SessionDep
 router = APIRouter()
 
 @router.get("/events/{year}")
-def read_events(year: int, session: SessionDep):
+def read_events(session: SessionDep, year: int):
     return get_events_from_year(session, year)
