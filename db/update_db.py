@@ -1,43 +1,53 @@
 import sys
 from pathlib import Path
 
-from db.db_utils import create_event_entity
+from models.events import Event
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))  # Adds project root to import path
 
+from db.database import get_session, engine
+from db.db_utils import URL_BASE, get_data
+from models.sessions import F1Session
+from sqlmodel import Session, select, desc
 
-from database import engine
-from sqlmodel import Session, select
-from models.events import Event
-from db_utils import URL_BASE, get_data, logger
-from datetime import datetime
+## THIS IS HOW WE DO IT! WAY EASIER! fetch latest session> boom
+#url = URL_BASE + f'sessions?date_start>2025-06-15T18:00:00+00:00'
 
-YEAR = str(datetime.today().year)
-meeting_keys_already_added = set()
-new_meeting_keys = []
 
-# smartest way to do this? one would be always loop through meeting keys to add session key.
-# other would be to for that meeting, only add it to the 'already added' if the last session was a race
-# (problem: then we would always be readding preseason practice) todo: think
+def fetch_latest_session(session: Session) -> str:
+    result = session.exec(
+        select(F1Session.date).order_by(desc(F1Session.date))
+    ).first()
+    return result
 
-# one alternative would be to always use 'latest' key, but that would mean we need to run this every weekend.
+def fetch_meeting_keys(session:Session) -> set:
+    results = session.exec(select(Event.meeting_key)).all()
+    return set(results)
 
-def fetch_meeting_keys_already_added():
+#returns true if successfuly added meeting key to db
+def add_meeting_to_db(session: Session, meeting_key:int):
+    meeting_data = get_data(URL_BASE + f'meetings?meeting_key={str(meeting_key)}')
+    #todo check what this returns
+
+def add_session_to_db(session:Session, session_key:int):
+    pass
+
+def add_driver_laps_to_db(session:Session, session_key:int):
+    pass
+
+def update_db(latest_session_date: str):
+    url = URL_BASE + f'sessions?date_start>{latest_session_date}'
+    data = get_data(url)
+
     with Session(engine) as session:
-        events = session.exec(select(Event.meeting_key)).all()
-        for event in events:
-            pass # need to make a decision on what logic to use here
+        meeting_keys = fetch_meeting_keys(session)
+        for f1session in data:
+            if not f1session['meeting_key'] in meeting_keys:
+                added = True if add_meeting_to_db(session, f1session['meeting_key']) else False
+                if added:
+                    meeting_keys.add(f1session['meeting_key'])
+                add_session_to_db(session, f1session['session_key'])
+                add_driver_laps_to_db(session, f1session['session_key'])
 
-def add_missing_event_data():
-    events_data = get_data(URL_BASE+f'meetings?year={YEAR}')
-    with Session(engine) as session:
-        for data_point in events_data:
-            if not (event['meeting_key'] in meeting_keys_already_added):
-                event = create_event_entity(data_point)
-                session.add(event)
-                session.commit()
-                new_meeting_keys.append(event['meeting_key'])
-                logger.info(f"Event added: {data_point['meeting_official_name']}")
-
-meeting_keys_already_added.add(set(fetch_meeting_keys_already_added()))
-add_missing_event_data()
+#with next(get_session()) as s:
+#    print(f"session: {fetch_latest_session(s)}")

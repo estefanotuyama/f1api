@@ -8,6 +8,7 @@ from sqlalchemy import select, distinct
 from sqlmodel import Session
 
 from db.database import engine, get_session
+from db.update_db import fetch_latest_session
 from models.drivers import Driver
 from models.events import Event
 
