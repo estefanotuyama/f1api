@@ -146,7 +146,7 @@ def add_laps_data():
         for session_key in session_keys:
             data = db_utils.get_laps(session_key)
             for datapoint in data:
-                # Check if record already exists
+                # Check if the record already exists
                 existing = session.exec(
                     select(SessionLaps).where(
                         SessionLaps.driver_number == datapoint['driver_number'],
