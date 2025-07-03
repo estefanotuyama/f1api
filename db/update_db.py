@@ -119,7 +119,7 @@ def add_drivers_laps_to_db(session:Session, session_key:int, driver_number:int):
             session.commit()
         except (IntegrityError, KeyError, ValueError, SQLAlchemyError) as e:
             session.rollback()
-            raise e
+            continue
 
 def update_db():
     with Session(engine) as session:

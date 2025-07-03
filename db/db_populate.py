@@ -144,7 +144,7 @@ def add_laps_data():
     with Session(engine) as session:
         session_keys = get_session_keys()
         for session_key in session_keys:
-            data = db_utils.get_laps(session_key)
+            data = db_utils.get_session_laps(session_key)
             for datapoint in data:
                 # Check if the record already exists
                 existing = session.exec(
