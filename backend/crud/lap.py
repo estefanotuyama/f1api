@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
-from models.session_laps import SessionLaps
-from crud.driver import get_single_driver_from_session_key
+from backend.models.session_laps import SessionLaps
+from backend.crud.driver import get_single_driver_from_session_key
 
 
 def get_driver_lap_times(session: Session, session_key: int, driver_number: int):

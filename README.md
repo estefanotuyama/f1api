@@ -18,18 +18,23 @@ A FastAPI backend for exploring Formula 1 driver data, sessions, lap times, and 
 
 -----
 
-## 📁 Project Structure
+## 📁 Backend Structure
 
 ```sh
 F1Project/
-├── main.py           # FastAPI app entry point
-├── models/           # SQLModel ORM classes
-├── api/              # API route definitions
-├── crud/             # DB access logic
-├── db/               # DB definitions and DB utilities
-├── schemas/          # Pydantic models for request/response
-├── utils/            # Utility files like logging setup
-└── .env              # Environment variables (ignored in Git)
+├── backend/
+│   ├── main.py           # ✅ FastAPI app entry point
+│   ├── models/           # SQLModel ORM classes
+│   ├── api/              # API route definitions
+│   ├── crud/             # DB access logic
+│   ├── db/               # DB definitions and utilities (engine, sessions, populators)
+│   ├── schemas/          # Pydantic models for request/response
+│   ├── utils/            # Utility files
+│   └── __init__.py
+├── frontend/             # Frontend (soon)
+├── .env                  # Environment variables (ignored in Git)
+├── requirements.txt      # Python dependencies
+└── README.md             # Project documentation
 ```
 
 -----

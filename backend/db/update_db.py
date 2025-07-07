@@ -1,9 +1,9 @@
-from models.drivers import Driver
-from models.events import Event
-from db.database import get_session, engine
-from db.db_utils import URL_BASE, get_data, logger
-from models.session_laps import SessionLaps
-from models.sessions import F1Session
+from backend.models.drivers import Driver
+from backend.models.events import Event
+from backend.db.database import engine
+from backend.db.db_utils import URL_BASE, get_data, logger, add_session_tire_compound_info
+from backend.models.session_laps import SessionLaps
+from backend.models.sessions import F1Session
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlmodel import Session, select, desc
@@ -138,6 +138,7 @@ def update_db():
                 add_session_to_db(session, f1session)
                 # the method below also adds the driver's laps to the DB
                 add_session_drivers_to_db(session, f1session['session_key'])
+                add_session_tire_compound_info(session, f1session['session_key'])
                 logger.info(f"Added all info for session {str(f1session['session_key'])}")
             except (IntegrityError, KeyError, ValueError, SQLAlchemyError) as e:
                 session.rollback()

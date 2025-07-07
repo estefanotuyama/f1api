@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from api import events, sessions, drivers, laps
-from db.database import create_db_and_tables
+from backend.api import sessions, events, drivers, laps
+from backend.db.database import create_db_and_tables
 
 app = FastAPI(title="F1 Stats",
               description="Simple app for F1 statistics")

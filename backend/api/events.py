@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from crud.event import get_events_from_year
-from db.db_utils import SessionDep
+from backend.crud.event import get_events_from_year
+from backend.db.db_utils import SessionDep
 
 router = APIRouter()
 

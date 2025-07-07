@@ -7,12 +7,12 @@ from sqlmodel import Session
 import db_utils
 from database import engine
 from db_utils import get_session_keys, logger
-from models.drivers import Driver
-from models.events import Event
-from models.sessions import F1Session
+from backend.models.drivers import Driver
+from backend.models.events import Event
+from backend.models.sessions import F1Session
 import json
 
-from models.session_laps import SessionLaps
+from backend.models.session_laps import SessionLaps
 
 
 URL_BASE = "https://api.openf1.org/v1/"

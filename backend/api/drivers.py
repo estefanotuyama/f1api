@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from db.db_utils import SessionDep
-from crud.driver import get_drivers_from_session_key
+from backend.db.db_utils import SessionDep
+from backend.crud.driver import get_drivers_from_session_key
 
 router = APIRouter()
 

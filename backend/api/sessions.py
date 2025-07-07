@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from db.db_utils import SessionDep
-from crud.f1session import get_sessions_from_meeting_key
+from backend.db.db_utils import SessionDep
+from backend.crud.f1session import get_sessions_from_meeting_key
 
 router = APIRouter()
 

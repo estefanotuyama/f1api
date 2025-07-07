@@ -2,7 +2,7 @@ import logging
 import time
 from typing import Annotated
 from urllib.error import HTTPError, URLError
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 import json
 
 from fastapi import Depends
@@ -10,11 +10,11 @@ from sqlalchemy import select, distinct
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlmodel import Session
 
-from db.database import engine, get_session
-from models.drivers import Driver
-from models.events import Event
-from models.session_laps import SessionLaps
-from models.sessions import F1Session
+from backend.db.database import engine, get_session
+from backend.models.drivers import Driver
+from backend.models.events import Event
+from backend.models.session_laps import SessionLaps
+from backend.models.sessions import F1Session
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -150,11 +150,11 @@ def add_session_tire_compound_info(session:Session, session_key:int):
         stints = get_data(stints_url)
         stints_hashmap = map_stints_laps(stints)
 
-        #iterate through laps and add tire compound info from hashmap
+        # iterate through laps and add tire compound info from hashmap
         for lap in laps:
             try:
                 compound = stints_hashmap[lap.lap_number]
-                #next:get the lap and update its compound
+                # next:get the lap and update its compound
                 lap.compound = compound
                 session.add(lap)
             except (IntegrityError, ValueError, SQLAlchemyError, AttributeError) as e:
