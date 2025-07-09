@@ -2,7 +2,9 @@ from sqlalchemy import PrimaryKeyConstraint
 from sqlmodel import SQLModel, Field
 
 
-# Classe que contém a modelação da tabela de drivers
+"""
+Database model that Represents a driver entry in the database.
+"""
 
 class Driver(SQLModel, table=True):
     session_key: int = Field(index=True)

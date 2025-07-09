@@ -1,29 +1,25 @@
-from urllib.request import urlopen
-
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlmodel import Session
-
-import db_utils
 from database import engine
-from db_utils import get_session_keys, logger
+from db_utils import get_session_keys, get_session_laps, logger, URL_BASE, get_data
 from backend.models.drivers import Driver
 from backend.models.events import Event
 from backend.models.sessions import F1Session
-import json
-
 from backend.models.session_laps import SessionLaps
 
+"""
+This script is responsible for populating the database from the ground up. Populates
+everthing, from f1 events to sessions to session laps.
+Takes a while to run.
+"""
 
-URL_BASE = "https://api.openf1.org/v1/"
 YEARS = [2023, 2024, 2025]
 
-def get_data(url):
-    response = urlopen(url)
-    data=json.loads(response.read().decode('utf-8'))
-    return data
-
 def populate_db():
+    """
+    Handles database populating, calling methods that populate each table.
+    """
     #populate events
     add_events_data()
     logger.info("Events added successfully!")
@@ -37,21 +33,13 @@ def populate_db():
     add_laps_data()
     logger.info("Laps data added successfully!")
 
-"""
-class Driver(SQLModel, table=True):
-    name: str
-    last_name: str
-    name_acronym: str = Field(index=True)
-    number: int
-    team: str
-    year: int = Field(index=True)
-    __table_args__ = (PrimaryKeyConstraint("acronym", "year"),)
-"""
-# DRIVERS POPULATE(2024):
-
-
 # EVENTS POPULATE(2024)
 def add_events_data():
+    """
+    Adds all events data to the database. An F1 event is the entire race weekend,
+    or testing session (the one at the start of an F1 season).
+    Request the data from the OpenF1 AP1, create the Model and upload to the Event table.
+    """
     for year in YEARS:
         events_data = get_data(URL_BASE + f'meetings?year={year}')
         with Session(engine) as session:
@@ -83,6 +71,12 @@ def add_events_data():
 
 # SESSIONS POPULATE
 def add_sessions_data():
+    """
+    Adds all F1 sessions to the database. An F1 session can be a Free Practice 1, 2 or 3,
+    Qualifying or Race (Sprints included).
+    Request data for all sessions in a year from the OpenF1 API, create the Model and
+    add the session to the F1Session table.
+    """
     for year in YEARS:
         url = URL_BASE + f'sessions?year={year}'
         data = get_data(url)
@@ -112,6 +106,12 @@ def add_sessions_data():
 
 #DRIVERS POPULATE(ALL)
 def add_drivers_data():
+    """
+    Adds all drivers to the database. There are a lot of entries to this table, since we have
+    the same driver but with different session keys for ease of access. This can and should
+    be changed later for optimization purposes.
+    Request data from OpenF1 API, create the Model and add it to the Driver database.
+    """
     url = URL_BASE + 'drivers'
     data = get_data(url)
     with Session(engine ) as session:
@@ -140,11 +140,20 @@ def add_drivers_data():
                 logger.error(f"Database error: {e}")
 
 #SESSION LAPS POPULATE(2024):
+#todo: review how we can optimize this, as this is the part that takes the longest to run.
 def add_laps_data():
+    """
+    Adds all driver laps to the database. There are a LOT of laps in a session, and a lot
+    of sessions. This is the part that takes the longest to run. We still need to
+    incorporate the code that fetches the compound used for each lap, since OpenF1 API
+    does not provide that.
+    Request the session data from OpenF1 API -> for each datapoint, extract the lap data
+    and add it to the database.
+    """
     with Session(engine) as session:
         session_keys = get_session_keys()
         for session_key in session_keys:
-            data = db_utils.get_session_laps(session_key)
+            data = get_session_laps(session_key)
             for datapoint in data:
                 # Check if the record already exists
                 existing = session.exec(

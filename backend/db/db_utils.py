@@ -1,20 +1,18 @@
-import logging
-import time
+import logging, time, json
 from typing import Annotated
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
-import json
-
 from fastapi import Depends
 from sqlalchemy import select, distinct
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlmodel import Session
-
 from backend.db.database import engine, get_session
 from backend.models.drivers import Driver
 from backend.models.events import Event
 from backend.models.session_laps import SessionLaps
 from backend.models.sessions import F1Session
+
+"""This script has utilities we use to assist database operations."""
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -25,12 +23,15 @@ logging.basicConfig(
 SessionDep = Annotated[Session, Depends(get_session)]
 URL_BASE = "https://api.openf1.org/v1/"
 
-def get_data(url):
-    response = urlopen(url)
-    data=json.loads(response.read().decode('utf-8'))
-    return data
-
 def get_data(url: str, retries: int = 5, backoff: float = 1.0):
+    """
+    Fetches data from the OpenF1 API given a request URL.
+    OpenF1 API is unstable, so we have a retrying logic in case something fails.
+    :param url: URL for which we want to request data.
+    :param retries: Number of retries if request fails.
+    :param backoff: Time to wait if failure.
+    :return: Data requested, a list of dictionaries.
+    """
     for attempt in range(retries):
         try:
             with urlopen(url) as response:
@@ -60,38 +61,77 @@ def get_data(url: str, retries: int = 5, backoff: float = 1.0):
     return None
 
 def get_sessions(meeting_key:int):
+    """
+    Gets sessions from the OpenF1 API given a meeting key
+    :param meeting_key: Unique meeting key identifier.
+    :return: Data requested, a list of dictionaries.
+    """
     url = URL_BASE + f'sessions?session_key={meeting_key}'
     data = get_data(url)
     return data
 
 def get_drivers():
+    """
+    Gets all drivers from the OpenF1 API.
+    :return: Data requested, a list of dictionaries.
+
+    """
     url = URL_BASE + 'drivers'
     data = get_data(url)
     return data
 
 def get_session_drivers_number(session:Session, session_key: int):
+    """
+    Fetches all driver numbers that participated in an F1 session.
+    :param session: Database Session.
+    :param session_key: Unique F1 session identifier.
+    :return: Data requested, a list of tuples.
+
+    """
     return session.exec(select(Driver.number).where(
         Driver.session_key == session_key
     )).all()
 
 
 def get_session_keys():
+    """
+    Fetches all session keys available in the database.
+    :return: Data requested, a list of session keys.
+    """
     with Session(engine) as session:
-        stmt = select(distinct(Driver.session_key))
-        result = session.execute(stmt).scalars().all()
+        query = select(distinct(Driver.session_key))
+        result = session.execute(query).scalars().all()
         return result
 
 def get_session_laps(session_key):
+    """
+    Requests all laps in a given session from the OpenF1 API
+    :param session_key: Unique F1 session identifier.
+    :return: Data requested, a list of dictionaries.
+    """
     url = URL_BASE + f'laps?session_key={session_key}'
     data = get_data(url)
     return data
 
 def get_driver_session_laps(session_key:int, driver_number:int):
+    """
+    Requests all session laps from a specific driver in a session.
+    :param session_key: Unique F1 Session identifier.
+    :param driver_number: F1 driver's number.
+    :return: Data requested, a list of dictionaries.
+    """
     url = URL_BASE + f"laps?session_key={str(session_key)}&driver_number={str(driver_number)}"
     data = get_data(url)
     return data
 
 def get_driver_laps_with_null_compound(session:Session, session_key:int, driver_number:int):
+    """
+    Queries the database to find all diver laps in which the compound is 'null', so we can add that info later.
+    :param session: Database session.
+    :param session_key: Unique F1 Session identifier.
+    :param driver_number: F1 driver's number.
+    :return: List of SessionLaps model.
+    """
     return session.exec(select(SessionLaps).where(
             (SessionLaps.session_key == session_key) &
             (SessionLaps.driver_number == driver_number) &
@@ -99,13 +139,12 @@ def get_driver_laps_with_null_compound(session:Session, session_key:int, driver_
         )
     ).scalars().all()
 
-def get_position_from_session_key(session_key):
-    url = URL_BASE + f'position?session_key={session_key}'
-    data = get_data(url)
-    for datapoint in data:
-        print(datapoint)
-
 def create_event_entity(data_point: dict):
+    """
+    Helps the creation of an Event model.
+    :param data_point: Dictionary containing event information.
+    :return: Event Model
+    """
     event = Event(
         meeting_key=data_point['meeting_key'],
         circuit_key=data_point['circuit_key'],
@@ -118,6 +157,11 @@ def create_event_entity(data_point: dict):
     return event
 
 def map_stints_laps(stints:dict):
+    """
+    Maps a lap number to the compound used in a stint.
+    :param stints: Dictionary containing stint data.
+    :return: Dictionary containing the mapping.
+    """
     stints_hashmap = {}
     for stint in stints:
         try:
@@ -170,6 +214,10 @@ def add_session_tire_compound_info(session:Session, session_key:int):
         session.commit()
 
 def add_all_sessions_compound():
+    """
+    Loops through all sessions and adds tire compound information for each lap,
+    if that wasn't added already.
+    """
     with Session(engine) as session:
         session_keys = session.exec(select(F1Session.session_key)).all()
         for session_key in session_keys:
