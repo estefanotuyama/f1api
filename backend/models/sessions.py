@@ -1,5 +1,8 @@
 from sqlmodel import SQLModel, Field
 
+"""
+Database model that represents a formula 1 session (practice, qualifying, race)
+"""
 
 class F1Session(SQLModel, table=True):
     location: str

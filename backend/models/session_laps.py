@@ -3,6 +3,9 @@ from typing import Optional
 from sqlalchemy import UniqueConstraint
 from sqlmodel import SQLModel, Field
 
+"""
+Database model that represents a Lap a driver completed in a session.
+"""
 
 class SessionLaps(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)

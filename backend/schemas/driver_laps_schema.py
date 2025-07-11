@@ -1,6 +1,11 @@
 from typing import List
 from pydantic import BaseModel
 
+"""
+This is a response model used by the application so that we can correctly return all
+laps a driver completed in a session.
+"""
+
 class LapRead(BaseModel):
     lap_number: int
     time: float
