@@ -41,17 +41,16 @@ def add_meeting_to_db(session: Session, meeting_key:int):
     """
     try:
         meeting_data = get_data(URL_BASE + f'meetings?meeting_key={str(meeting_key)}')[0]
-        single_meeting_data = meeting_data[0]
         new_meeting = Event(
-                    meeting_key=single_meeting_data['meeting_key'],
-                    circuit_key=single_meeting_data['circuit_key'],
-                    location=single_meeting_data['location'],
-                    country_name=single_meeting_data['country_name'],
-                    circuit_name=single_meeting_data['circuit_short_name'],
-                    meeting_official_name=single_meeting_data['meeting_official_name'],
-                    year=single_meeting_data['year']
+                    meeting_key=meeting_data['meeting_key'],
+                    circuit_key=meeting_data['circuit_key'],
+                    location=meeting_data['location'],
+                    country_name=meeting_data['country_name'],
+                    circuit_name=meeting_data['circuit_short_name'],
+                    meeting_official_name=meeting_data['meeting_official_name'],
+                    year=meeting_data['year']
                     )
-        existing = session.get(Event, single_meeting_data["meeting_key"])
+        existing = session.get(Event, meeting_data["meeting_key"])
         if existing:
             return False
         session.add(new_meeting)
@@ -72,7 +71,8 @@ def add_session_to_db(session:Session, f1session: dict):
     try:
         existing = session.get(F1Session, f1session['session_key'])
         if existing:
-            return None
+            logger.info(f"Session {str(f1session['session_key'])} already exists, skipping.")
+            return
         new_f1session = F1Session(
             location=f1session['location'],
             meeting_key=f1session['meeting_key'],
@@ -184,4 +184,5 @@ def update_db():
                 session.rollback()
                 logger.error(e)
 
-update_db()
+if __name__ == "__main__":
+    update_db()

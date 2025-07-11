@@ -226,4 +226,5 @@ def add_all_sessions_compound():
             except (IntegrityError, KeyError, ValueError, SQLAlchemyError) as e:
                 logger.error(f"Ran into an error while running 'add_all_sessions_compound' for session {str(session_key)}: {e}")
 
-add_all_sessions_compound()
+if __name__ == "__main__":
+    add_all_sessions_compound()

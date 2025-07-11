@@ -10,3 +10,12 @@ def get_events_from_year(session:Session, year: int):
     :return: List of events as 'Event' pydantic model.
     """
     return session.exec(select(Event).where(Event.year == year)).all()
+
+def get_available_years(session):
+    """
+    Queries database to find all unique years so we can display them to users.
+    :param session: Database session
+    :return: Set with all years.
+    """
+    years = session.exec(select(Event.year)).all()
+    return sorted(set(years))
