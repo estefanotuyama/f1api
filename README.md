@@ -1,4 +1,4 @@
-# 🏎️ F1 Stats API v0.1
+# 🏎️ F1 Stats API v0.2
 
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/fastapi-0.110-green)
@@ -15,10 +15,11 @@ A FastAPI backend for exploring Formula 1 driver data, sessions, lap times, and 
   - ✅ Explore driver participation and lap times
   - ✅ Clean, modular FastAPI backend using SQLModel
   - ✅ SQLite database, easily extendable to PostgreSQL
+  - ✅ Frontend in React
 
 -----
 
-## 📁 Backend Structure
+## 📁 Structure
 
 ```sh
 F1Project/
@@ -31,7 +32,11 @@ F1Project/
 │   ├── schemas/          # Pydantic models for request/response
 │   ├── utils/            # Utility files
 │   └── __init__.py
-├── frontend/             # Frontend (soon)
+├── frontend/
+│   ├── app/              # Exports frontend code
+│   ├── public/           # Frontend static files
+│   ├── src/              # Source code
+├── static/               # static files (icons)
 ├── .env                  # Environment variables (ignored in Git)
 ├── requirements.txt      # Python dependencies
 └── README.md             # Project documentation
@@ -76,7 +81,7 @@ pip install -r requirements.txt
 The project pulls data from the OpenF1 API. To create the database tables and populate the 2024 season, run:
 
 ```bash
-python db_populate.py
+python backend/db/db_populate.py
 ```
 
 ### 5\. 🧪 Run the API Server
@@ -84,7 +89,7 @@ python db_populate.py
 Start the development server with:
 
 ```bash
-uvicorn main:app --reload
+uvicorn backend.main:app --reload
 ```
 
 Now, you can access the API documentation:
@@ -92,16 +97,28 @@ Now, you can access the API documentation:
   - **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
   - **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
+### 6\. Install Frontend dependencies and start frontend server
+
+```bash
+cd ./frontend
+npm install
+npm start
+```
+
+Now, you can access the application at http://localhost:3000
+
 -----
 
 ## 📌 TODO
 
-  - [ ] Add driver, session, and lap time API routes (in progress)
-  - [ ] Implement filtering for API endpoints
+  - [x] Add driver, session, and lap time API routes (in progress)
   - [x] Write tests using `pytest`
+  - [x] Add simple Front-End
+  - [ ] Add session stats feature
+  - [ ] Add AI integration
+  - [ ] Implement filtering for API endpoints
   - [ ] Convert to PostgreSQL
   - [ ] Deploy to a cloud service
-  - [ ] Add Front-End
 
 -----
 
