@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlmodel import Session
 from database import engine
-from db_utils import get_session_keys, get_session_laps, logger, URL_BASE, get_data
+from db_utils import get_session_keys, get_session_laps, logger, URL_BASE, get_data, add_session_result
 from backend.models.drivers import Driver
 from backend.models.events import Event
 from backend.models.sessions import F1Session
@@ -83,6 +83,7 @@ def add_sessions_data():
         with Session(engine) as session:
             for data_point in data:
                 try:
+                    add_session_result(session, data_point['session_key'])
                     f1session = F1Session(
                         location=data_point['location'],
                         meeting_key=data_point['meeting_key'],
@@ -175,7 +176,6 @@ def add_laps_data():
                         lap_time=datapoint['lap_duration'] or 0.0,
                         st_speed=datapoint['st_speed'] or 0
                     )
-                    print(datapoint['lap_duration'])
                     session.add(lap_info)
                     session.commit()
                     logger.info(f"Lap added! Current session key: {str(datapoint['session_key'])}")

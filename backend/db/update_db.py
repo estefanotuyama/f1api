@@ -1,7 +1,7 @@
 from backend.models.drivers import Driver
 from backend.models.events import Event
 from backend.db.database import engine
-from backend.db.db_utils import URL_BASE, get_data, logger, add_session_tire_compound_info
+from backend.db.db_utils import URL_BASE, get_data, logger, add_session_tire_compound_info, add_session_result
 from backend.models.session_laps import SessionLaps
 from backend.models.sessions import F1Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -176,6 +176,7 @@ def update_db():
                     meeting_keys.add(f1session['meeting_key'])
             try:
                 add_session_to_db(session, f1session)
+                add_session_result(session, f1session['session_key'])
                 # the method below also adds the driver's laps to the DB
                 add_session_drivers_to_db(session, f1session['session_key'])
                 add_session_tire_compound_info(session, f1session['session_key'])

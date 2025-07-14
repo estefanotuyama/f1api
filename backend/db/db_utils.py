@@ -10,6 +10,7 @@ from backend.db.database import engine, get_session
 from backend.models.drivers import Driver
 from backend.models.events import Event
 from backend.models.session_laps import SessionLaps
+from backend.models.session_result import SessionResult
 from backend.models.sessions import F1Session
 
 """This script has utilities we use to assist database operations."""
@@ -226,5 +227,47 @@ def add_all_sessions_compound():
             except (IntegrityError, KeyError, ValueError, SQLAlchemyError) as e:
                 logger.error(f"Ran into an error while running 'add_all_sessions_compound' for session {str(session_key)}: {e}")
 
+def add_session_result(session:Session, session_key:int):
+    """
+    Queries OpenF1 API for session results and adds it to db.
+    :param session: Database session.
+    :param session_key: Unique F1 session key identifier
+    :return: returns early if exception.
+    """
+    data = get_data(URL_BASE + f'session_result?session_key={session_key}')
+    for datapoint in data:
+        try:
+            existing = session.exec(
+                select(SessionResult).where(
+                    (SessionResult.driver_number == datapoint['driver_number']) &
+                    (SessionResult.session_key == datapoint['session_key'])
+                )
+            ).first()
+            if existing:
+                continue
+            sr_entry = SessionResult(
+                meeting_key=datapoint['meeting_key'],
+                session_key=datapoint['session_key'],
+                driver_number=datapoint['driver_number'],
+                position=datapoint['position'],
+                duration=str(datapoint['duration']),
+                number_of_laps=datapoint['number_of_laps'],
+                gap_to_leader=str(datapoint['gap_to_leader']),
+                dnf=datapoint['dnf'],
+                dns=datapoint['dns'],
+                dsq=datapoint['dsq']
+            )
+            session.add(sr_entry)
+        except IntegrityError as e:
+            session.rollback()
+            logger.error(f"IntegrityError: {e.orig}")
+            return
+        except SQLAlchemyError as e:
+            session.rollback()
+            logger.error(f"Database error: {e}")
+            return
+        session.commit()
+        logger.info(f"Finished adding session results for session {str(datapoint['session_key'])}")
+
 if __name__ == "__main__":
-    add_all_sessions_compound()
+    pass
