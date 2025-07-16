@@ -78,10 +78,10 @@ pip install -r requirements.txt
 
 ### 4\. 🗄️ Populate the Database
 
-The project pulls data from the OpenF1 API. To create the database tables and populate the 2024 season, run:
+The project pulls data from the OpenF1 API. To create the database tables and populate them, run:
 
 ```bash
-python backend/db/db_populate.py
+python backend/db/update_db.py
 ```
 
 ### 5\. 🧪 Run the API Server
