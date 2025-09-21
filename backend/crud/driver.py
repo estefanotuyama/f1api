@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from backend.models.drivers import Driver
+from backend.models.driver import Driver
 
 def get_drivers_from_session_key(session:Session, session_key:int):
     """

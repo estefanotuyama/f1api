@@ -6,7 +6,7 @@ from fastapi import Depends
 from sqlalchemy import select, distinct
 from sqlmodel import Session
 from backend.db.database import engine, get_session
-from backend.models.drivers import Driver
+from backend.models.driver import Driver
 
 """This script has utilities we use to assist database operations."""
 
@@ -77,18 +77,24 @@ def get_session_laps(session_key):
     data = get_data(url)
     return data
 
-def map_stints_laps(stints:dict):
+def map_stints_laps(stints: list[dict]):
     """
     Maps a lap number to the compound used in a stint.
-    :param stints: Dictionary containing stint data.
-    :return: Dictionary containing the mapping.
+    :param stints: A list of dictionary objects containing stint data.
+    :return: Dictionary containing the lap-to-compound mapping.
     """
     stints_hashmap = {}
     for stint in stints:
-        try:
-            for i in range(stint['lap_start'], stint['lap_end'] + 1):
-                stints_hashmap[i] = stint['compound'] or FALLBACK_COMPOUND
-        except TypeError:
-            logger.info(f"Unkown stint data for driver {stint['driver_number']} on session {stint['session_key']}")
-            return {i: FALLBACK_COMPOUND for i in range(1, 80)}
+        lap_start = stint.get('lap_start')
+        lap_end = stint.get('lap_end')
+
+        if lap_start is not None and lap_end is not None:
+            for i in range(lap_start, lap_end + 1):
+                stints_hashmap[i] = stint.get('compound') or FALLBACK_COMPOUND
+        else:
+            logger.warning(
+                f"Skipping stint with incomplete data: driver {stint.get('driver_number')}, "
+                f"session {stint.get('session_key')}"
+            )
+            
     return stints_hashmap
