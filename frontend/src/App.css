@@ -1,4 +1,39 @@
-/* Dark theme styles */
+/* ==========================================================================
+   1. Design System & Variables
+   ========================================================================== */
+:root {
+  /* Color Palette */
+  --color-background: #0f0f0f;
+  --color-surface-1: #1a1a1a; /* For main panels, cards */
+  --color-surface-2: #2a2a2a; /* For inputs, table headers */
+  --color-border: #333;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #cccccc;
+  --color-accent: #ff6b35; /* A slightly softer, modern orange-red */
+  --color-danger: #ff4444;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+
+  /* Spacing Scale (makes all margins/padding consistent) */
+  --space-xs: 0.25rem; /* 4px */
+  --space-sm: 0.5rem; /* 8px */
+  --space-md: 1rem; /* 16px */
+  --space-lg: 1.5rem; /* 24px */
+  --space-xl: 2rem; /* 32px */
+  --space-xxl: 3rem; /* 48px */
+
+  /* Other */
+  --border-radius: 12px;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --transition: all 0.25s ease-in-out;
+}
+
+/* ==========================================================================
+   2. Global & Base Styles
+   ========================================================================== */
 * {
   margin: 0;
   padding: 0;
@@ -6,45 +41,75 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
-    "Droid Sans", "Helvetica Neue", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #0f0f0f;
-  color: #ffffff;
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
   min-height: 100vh;
 }
 
-.app {
-  min-height: 100vh;
-  background-color: #0f0f0f;
-}
-
+/* ==========================================================================
+   3. App Layout
+   ========================================================================== */
 .app-header {
-  background-color: #1a1a1a;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #333;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.app-header h1 {
-  color: #ff6b35;
-  font-size: 2rem;
-  font-weight: 700;
+  background-color: var(--color-surface-1);
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
   text-align: center;
 }
 
+.app-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
 .main-content {
-  padding: 2rem;
-  max-width: 1400px;
+  padding: var(--space-xl);
+  max-width: 1800px;
   margin: 0 auto;
 }
 
-/* Controls Section */
+/* --- Main Grid Layout (IMPROVED: More space for drivers) --- */
+.drivers-results-grid {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr; /* Changed from 1fr 1fr to give more space to drivers */
+  gap: var(--space-xl);
+  align-items: start;
+  margin-bottom: var(--space-xl);
+}
+
+/* --- Lap Data Section (full width below main grid) --- */
+.lap-data-section {
+  width: 100%;
+  margin-top: var(--space-xl);
+}
+
+/* ==========================================================================
+   4. Reusable Components & Patterns
+   ========================================================================== */
+
+/* --- Reusable Panel for Drivers/Results sections --- */
+.panel {
+  background-color: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-lg);
+  height: fit-content;
+}
+
+.panel-header {
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-lg);
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* --- Controls / Dropdowns --- */
 .controls {
   display: flex;
-  gap: 2rem;
-  margin-bottom: 3rem;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xxl);
   flex-wrap: wrap;
 }
 
@@ -55,103 +120,83 @@ body {
 
 .dropdown-container label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-sm);
   font-weight: 600;
-  color: #cccccc;
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .dropdown-container select {
   width: 100%;
-  padding: 0.75rem;
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-  border-radius: 8px;
-  color: #ffffff;
+  padding: var(--space-md);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  color: var(--color-text-primary);
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 
 .dropdown-container select:hover {
-  border-color: #ff6b35;
+  border-color: var(--color-accent);
 }
 
-.dropdown-container select:focus {
-  outline: none;
-  border-color: #ff6b35;
-  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
-}
-
-.dropdown-container select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.dropdown-container select option {
-  background-color: #2a2a2a;
-  color: #ffffff;
-}
-
-/* Loading and Error States */
-.loading {
-  color: #ff6b35;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  font-style: italic;
-}
-
-.error {
-  color: #ff4444;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background-color: rgba(255, 68, 68, 0.1);
-  border-radius: 4px;
-  border-left: 3px solid #ff4444;
-}
-
-/* Drivers Section */
-.drivers-section {
-  margin-bottom: 3rem;
-}
-
-.drivers-section h2 {
-  color: #ff6b35;
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
+/* --- Driver Cards Grid (OPTIMIZED FOR 4 PER ROW) --- */
 .drivers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(4, 1fr); /* Fixed 4 columns for consistent 4-per-row layout */
+  gap: var(--space-md);
+  width: 100%;
 }
 
+/* --- Individual Driver Card (COMPACT & MODERN DESIGN) --- */
 .driver-card {
-  background-color: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 1.5rem;
+  background-color: var(--color-surface-2);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition);
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 1rem;
+  text-align: left;
+  height: 90px; /* Reduced height significantly for horizontal layout */
+  position: relative;
+  overflow: hidden;
+  gap: var(--space-md); /* Added gap between image and info */
 }
 
 .driver-card:hover {
-  border-color: #ff6b35;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+  border-color: var(--color-accent);
+  transform: translateY(-2px); /* Reduced hover lift from 4px to 2px */
+  box-shadow: var(--shadow-md);
+  background-color: rgba(255, 107, 53, 0.05);
 }
 
 .driver-card.selected {
-  border-color: #ff6b35;
-  background-color: rgba(255, 107, 53, 0.1);
+  border-color: var(--color-accent);
+  background-color: rgba(255, 107, 53, 0.15);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.driver-card.selected::before {
+  content: "✓";
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-xs);
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: 50%;
+  width: 18px; /* Slightly smaller checkmark */
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
 }
 
 .driver-image {
@@ -159,124 +204,185 @@ body {
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #333;
+  border: 2px solid var(--color-border);
+  margin-bottom: 0; /* Removed margin-bottom since image is now on the left */
+  flex-shrink: 0; /* Added flex-shrink to prevent image from shrinking */
+  transition: var(--transition);
+}
+
+.driver-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start; /* Removed width: 100% and changed alignment for horizontal layout */
+  min-width: 0; /* Allows text to truncate properly */
 }
 
 .driver-info h3 {
-  color: #ffffff;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 2px; /* Reduced margin for tighter spacing */
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  overflow: hidden;
+  white-space: nowrap; /* Changed to single line for horizontal layout */
+  text-overflow: ellipsis;
 }
 
 .driver-number {
-  color: #ff6b35;
-  font-weight: 700;
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
+  font-size: 0.85rem !important; /* Reduced size for horizontal layout */
+  font-weight: 800 !important;
+  color: var(--color-accent) !important;
+  margin-bottom: 2px !important; /* Reduced margin */
 }
 
 .driver-team {
-  color: #cccccc;
-  font-size: 0.85rem;
+  font-size: 0.8rem !important; /* Slightly smaller for compact layout */
+  color: var(--color-text-secondary) !important;
+  font-weight: 500 !important;
+  margin: 0 !important;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-/* Lap Data Section */
-.lap-data-section {
-  margin-bottom: 2rem;
-}
-
-.lap-data-section h2 {
-  color: #ff6b35;
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.lap-data-table {
+/* --- Results Section --- */
+.results-table-container {
+  /* Add any specific styling for your results table here */
   overflow-x: auto;
-  background-color: #1a1a1a;
-  border-radius: 12px;
-  border: 1px solid #333;
 }
 
-.lap-data-table table {
+/* --- Data Table (for Laps and Results) --- */
+.data-table {
   width: 100%;
   border-collapse: collapse;
+  background-color: var(--color-surface-1);
+  border-radius: var(--border-radius);
+  overflow: hidden;
 }
 
-.lap-data-table th {
-  background-color: #2a2a2a;
-  color: #ff6b35;
-  padding: 1rem;
+.data-table th,
+.data-table td {
+  padding: var(--space-md);
   text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table th {
+  background-color: var(--color-surface-2);
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #444;
+  color: var(--color-text-secondary);
 }
 
-.lap-data-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #333;
-  color: #ffffff;
-}
-
-.lap-data-table tbody tr:hover {
+.data-table tbody tr:hover {
   background-color: rgba(255, 107, 53, 0.05);
 }
 
-.lap-data-table tbody tr:last-child td {
+.data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.note-paragraph {
-  font-style: italic;
-  color: #ffffff;
-  font-weight: lighter;
-  font-size: 0.9rem;
-
+/* --- Loading and Error States --- */
+.loading,
+.error {
+  padding: var(--space-xl);
+  text-align: center;
+  border-radius: var(--border-radius);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .controls {
-    flex-direction: column;
-    gap: 1rem;
-  }
+.loading {
+  color: var(--color-text-secondary);
+}
 
-  .main-content {
-    padding: 1rem;
+.error {
+  color: var(--color-danger);
+  background-color: rgba(255, 68, 68, 0.1);
+  border: 1px solid var(--color-danger);
+}
+
+.note {
+	fontSize: 0.8rem;
+	color: var(--color-text-secondary);
+	font-weight: normal;
+	marginTop: var(--space-sm);
+}
+
+/* ==========================================================================
+   5. Responsive Design (IMPROVED FOR BETTER MOBILE EXPERIENCE)
+   ========================================================================== */
+@media (max-width: 1400px) {
+  .drivers-grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 per row on medium screens */
+  }
+}
+
+@media (max-width: 1200px) {
+  .drivers-results-grid {
+    grid-template-columns: 2fr 1fr; /* Maintain driver space priority */
+  }
+}
+
+@media (max-width: 900px) {
+  /* Stack the main grid on smaller screens */
+  .drivers-results-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
   }
 
   .drivers-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr); /* 2 per row on tablets */
   }
 
   .driver-card {
+    height: 75px; /* Adjusted for horizontal layout on mobile */
+    padding: var(--space-sm);
+  }
+}
+
+@media (max-width: 768px) {
+  .controls {
     flex-direction: column;
-    text-align: center;
+    gap: var(--space-lg);
   }
 
-  .app-header {
-    padding: 1rem;
+  .main-content {
+    padding: var(--space-lg);
   }
 
   .app-header h1 {
     font-size: 1.5rem;
   }
-}
 
-
-
-@media (max-width: 480px) {
-  .lap-data-table {
-    font-size: 0.8rem;
+  .drivers-grid {
+    grid-template-columns: repeat(2, 1fr); /* Keep 2 per row on mobile */
+    gap: var(--space-sm);
   }
 
-  .lap-data-table th,
-  .lap-data-table td {
-    padding: 0.5rem;
+  .driver-card {
+    height: 70px; /* More compact horizontal layout on mobile */
+  }
+
+  .driver-image {
+    width: 40px; /* Smaller images on mobile */
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .drivers-grid {
+    grid-template-columns: 1fr; /* Single column on very small screens */
+  }
+
+  .driver-card {
+    height: 65px; /* Even more compact for single column */
+    padding: var(--space-sm);
+  }
+
+  .driver-image {
+    width: 35px; /* Smaller images on mobile */
+    height: 35px;
   }
 }

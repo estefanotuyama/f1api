@@ -176,18 +176,12 @@ export const useF1Data = () => {
 		}
 	};
 
-	const formatLapTime = (time: number) => {
-		const minutes = Math.floor(time / 60)
-		const seconds = (time % 60).toFixed(3)
-		return `${minutes}:${seconds.padStart(6, "0")}`
-	};
-
 	return {
 		years, events, sessions, drivers,
 		selectedYear, selectedEvent, selectedSession, selectedDriver,
 		driverLaps,
 		loading, errors,
-		handleYearChange, handleEventChange, handleSessionChange, handleDriverClick, formatLapTime
+		handleYearChange, handleEventChange, handleSessionChange, handleDriverClick
 	};
 
 };

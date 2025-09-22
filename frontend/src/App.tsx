@@ -24,7 +24,6 @@ function App() {
 		handleEventChange,
 		handleSessionChange,
 		handleDriverClick,
-		formatLapTime,
 	} = useF1Data();
 
 	return (
@@ -48,25 +47,38 @@ function App() {
 					onEventChange={handleEventChange}
 					onSessionChange={handleSessionChange}
 				/>
-				{/* Drivers Display */}
-				{selectedSession && (
-					<div className="drivers-section">
-						<h2>Drivers in {selectedSession.session_name}</h2>
-						{loading.drivers && <div className="loading">Loading drivers...</div>}
-						{errors.drivers && <div className="error">{errors.drivers}</div>}
+				<div className="drivers-results-grid">
 
-						<div className="drivers-grid">
-							{drivers.map((driver) => (
-								<DriverCard
-									key={driver.driver_number}
-									driver={driver}
-									isSelected={selectedDriver?.driver_number == driver.driver_number}
-									onClick={handleDriverClick}
-								/>
-							))}
+					{/* Drivers Display */}
+					{selectedSession && (
+						<div className="panel">
+							<h2 className="panel-header">Drivers in {selectedEvent?.circuit_name}, {selectedEvent?.country_name} {selectedYear} {selectedSession.session_name}</h2>
+							{loading.drivers && <div className="loading">Loading drivers...</div>}
+							{errors.drivers && <div className="error">{errors.drivers}</div>}
+
+							<div className="drivers-grid">
+								{drivers.map((driver) => (
+									<DriverCard
+										key={driver.driver_number}
+										driver={driver}
+										isSelected={selectedDriver?.driver_number == driver.driver_number}
+										onClick={handleDriverClick}
+									/>
+								))}
+							</div>
 						</div>
-					</div>
-				)}
+					)}
+
+					{/* Results table */}
+					{selectedSession &&
+						<div className="panel">
+							<h2 className="panel-header">Session Result</h2>
+							<div className="results-table-container">
+
+							</div>
+						</div>
+					}
+				</div>
 
 				{/* Lap Data Display */}
 				{selectedDriver && (

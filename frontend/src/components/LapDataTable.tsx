@@ -1,35 +1,25 @@
-import { Driver, DriverLapsData } from "../types";
+
+import type { Driver, DriverLapsData } from "../types"
+import { formatLapTime } from "../utils"
 
 interface LapDataTableProps {
-	selectedDriver: Driver | null;
-	driverLaps: DriverLapsData | null;
-	loading: boolean;
-	error: string;
+	selectedDriver: Driver | null
+	driverLaps: DriverLapsData | null
+	loading: boolean
+	error: string
 }
 
-export const LapDataTable = ({
-	selectedDriver,
-	driverLaps,
-	loading,
-	error,
-}: LapDataTableProps) => {
-
-	const formatLapTime = (time: number) => {
-		const minutes = Math.floor(time / 60);
-		const seconds = (time % 60).toFixed(3);
-		return `${minutes}:${seconds.padStart(6, "0")}`;
-	};
-
+export const LapDataTable = ({ selectedDriver, driverLaps, loading, error }: LapDataTableProps) => {
 	if (!selectedDriver) {
-		return null;
+		return null
 	}
 
 	return (
-		<div className="lap-data-section">
-			<h2>
+		<div className="panel lap-data-section">
+			<h2 className="panel-header">
 				Lap Data for {selectedDriver.first_name} {selectedDriver.last_name}
 				<br />
-				<p className="note-paragraph">
+				<p className="note">
 					Note: A lap time of 0:00.000 means the OpenF1 API did not provide lap data for this lap.
 				</p>
 			</h2>
@@ -38,8 +28,8 @@ export const LapDataTable = ({
 			{error && <div className="error">{error}</div>}
 
 			{driverLaps && driverLaps.laps.length > 0 && (
-				<div className="lap-data-table">
-					<table>
+				<div className="results-table-container">
+					<table className="data-table">
 						<thead>
 							<tr>
 								<th>Lap</th>
@@ -64,5 +54,6 @@ export const LapDataTable = ({
 				</div>
 			)}
 		</div>
-	);
-};
+	)
+}
+
