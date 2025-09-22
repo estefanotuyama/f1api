@@ -18,6 +18,8 @@ def create_db_and_tables(populating:bool):
     Creates the database and populates if populating is True
     :param: whether you are populating the db or not
     """
+    #uncomment if you want to reset the db (WARNING: WILL LOSE ALL DATA)
+    #SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
     if populating:
         from .update_db import update_db

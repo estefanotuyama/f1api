@@ -95,6 +95,7 @@ def add_drivers_and_session_links(session: Session, session_key: int, all_driver
             made_update = False
             new_first_name = driver_data.get('first_name')
             new_last_name = driver_data.get('last_name')
+            new_headshot_url = driver_data.get('headshot_url')
 
             if driver.first_name == "" and new_first_name:
                 driver.first_name = new_first_name
@@ -103,7 +104,11 @@ def add_drivers_and_session_links(session: Session, session_key: int, all_driver
             if driver.last_name == "" and new_last_name:
                 driver.last_name = new_last_name
                 made_update = True
-            
+
+            if driver.headshot_url == "" and new_headshot_url:
+                driver.headshot_url = new_headshot_url
+                made_update = True
+
             if made_update:
                 session.add(driver)
                 logger.info(f"Updated missing name for driver {acronym}.")
@@ -268,6 +273,8 @@ def update_db():
         except Exception as e:
             logger.error(f"Failed to add meetings to db. Error: {e}")
 
+        data_size = len(data)
+        c= 0
         for f1session in data:
             try:
                 with session.begin():
@@ -275,7 +282,8 @@ def update_db():
                     add_session_to_db(session, f1session)
                     add_all_laps_for_session(session, session_key)
                     add_session_result_to_db(session, session_key)
-                logger.info(f"Committed all info for session {str(session_key)}")
+                c += 1
+                logger.info(f"Committed all info for session {str(session_key)}. Progress: ({c}/{data_size})")
             except Exception:
                 logger.error(
                     f"Transaction failed for session {str(f1session['session_key'])}",

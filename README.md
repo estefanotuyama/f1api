@@ -92,7 +92,7 @@ python -m backend.db.update_db
 
 ### 6\. 🧪 Run the API Server
 
-Start the development server with:
+From the root directory, start the development server with:
 
 ```bash
 uvicorn backend.main:app --reload
