@@ -11,9 +11,16 @@ def get_driver_lap_times(session: Session, session_key: int, driver_number: int)
     :param driver_number: Driver's number in Formula 1. (Example Charles LeClerc = 16)
     :return: driver, as a 'Driver' pydantic model, and a list of laps, each a 'SessionLaps' pydantic model.
     """
-    driver = get_single_driver_from_session_key(session, session_key, driver_number)
+    driver_data = get_single_driver_from_session_key(session, session_key, driver_number)
+
+    if not driver_data:
+        return None, None, []
+
+    driver, session_data = driver_data
 
     laps = session.exec(select(SessionLaps).where(
-        (SessionLaps.driver_number == driver.number) & (SessionLaps.session_key == driver.session_key)
+        SessionLaps.driver_id == driver.id,
+        SessionLaps.session_key == session_key
     )).all()
-    return driver, laps
+
+    return driver, session_data, laps

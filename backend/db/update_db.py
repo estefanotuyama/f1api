@@ -6,8 +6,9 @@ from backend.db.db_utils import URL_BASE, get_data, logger, map_stints_laps, FAL
 from backend.models.session_laps import SessionLaps
 from backend.models.session_result import SessionResult
 from backend.models.sessions import F1Session
-from sqlalchemy import URL, select
+from sqlalchemy import select
 from sqlmodel import Session, select, desc
+from collections import defaultdict
 
 """
 This is the script that updates the database.
@@ -76,93 +77,127 @@ def add_session_to_db(session:Session, f1session: dict):
     session.add(new_f1session)
     logger.info(f"Staged session {str(f1session['session_key'])} for addition.")
 
-def add_session_drivers_to_db(session:Session, session_key:int):
+def add_drivers_and_session_links(session: Session, session_key: int, all_drivers_data: list[dict]):
     """
-    Gets all the drivers in an F1 Session from OpenF1 API and adds them to the db. Also call
-    the method that adds a driver's laps to the DB `add_drivers_laps_to_db`.
-    :param session: Database Session
-    :param session_key: Unique F1 Session identifier.
+    Adds drivers to the DB if they don't exist and links them to the session.
+    This function NO LONGER fetches data, it just processes a list of driver data.
     """
-    url = URL_BASE + f"drivers?session_key={str(session_key)}"
-    data = get_data(url)
-    for driver_data in data:
-        # Check if driver exists in Driver table
+    for driver_data in all_drivers_data:
+        acronym = driver_data.get('name_acronym')
+        if not acronym:
+            continue
+
         driver = session.exec(
-            select(Driver).where(
-                Driver.first_name == driver_data['first_name'],
-                Driver.last_name == driver_data['last_name'],
-                Driver.name_acronym == driver_data['name_acronym']
-            )
+            select(Driver).where(Driver.name_acronym == acronym)
         ).first()
 
-        if not driver:
-            new_driver = Driver(
-                driver_number=driver_data.get('driver_number'),
-                first_name=driver_data.get('first_name'),
-                last_name=driver_data.get('last_name'),
-                name_acronym=driver_data.get('name_acronym'),
+        if driver:
+            made_update = False
+            new_first_name = driver_data.get('first_name')
+            new_last_name = driver_data.get('last_name')
+
+            if driver.first_name == "" and new_first_name:
+                driver.first_name = new_first_name
+                made_update = True
+
+            if driver.last_name == "" and new_last_name:
+                driver.last_name = new_last_name
+                made_update = True
+            
+            if made_update:
+                session.add(driver)
+                logger.info(f"Updated missing name for driver {acronym}.")
+
+        else:
+            driver = Driver(
+                first_name=driver_data.get('first_name', ""),
+                last_name=driver_data.get('last_name', ""),
+                name_acronym=acronym,
                 headshot_url=driver_data.get('headshot_url', "")
             )
-            session.add(new_driver)
+            session.add(driver)
             session.flush()
-            session.refresh(new_driver)
-            driver = new_driver
-            logger.info(f"Staged driver {driver_data['name_acronym']} for addition.")
+            session.refresh(driver)
+            logger.info(f"Staged new driver {acronym} for addition (with placeholders if needed).")
+        # save driver id for later
+        driver_data['driver_id'] = driver.id
 
-        # Check if SessionDriver entry exists
         session_driver = session.get(SessionDriver, (session_key, driver.id))
         if not session_driver:
             new_session_driver = SessionDriver(
                 session_key=session_key,
                 driver_id=driver.id,
-                team=driver_data.get('team_name')
+                team=driver_data.get('team_name'),
+                driver_number=driver_data.get('driver_number')
             )
             session.add(new_session_driver)
             logger.info(f"Staged driver {driver_data['name_acronym']} in session {str(session_key)} for addition.")
 
-        #now we add this driver's session laps to the DB
-        add_drivers_laps_to_db(session, session_key, driver.id, driver_data['driver_number'])
-
-def add_drivers_laps_to_db(session:Session, session_key:int, driver_id:int, driver_number:int):
+def add_all_laps_for_session(session: Session, session_key: int):
     """
-    Adds all laps information from a driver in a session.
-    :param session: Database session
-    :param session_key: Unique F1 session identifier
-    :param driver_id: The driver's unique id
-    :param driver_number: The driver's number in the session
+    Efficiently fetches and adds all laps for all drivers in a session.
     """
-    laps_url = URL_BASE + f'laps?session_key={str(session_key)}&driver_number={str(driver_number)}'
-    lap_data = get_data(laps_url)
+    logger.info(f"Starting bulk lap/stint processing for session {session_key}.")
 
-    stints_url = URL_BASE + f"stints?session_key={str(session_key)}&driver_number={str(driver_number)}"
-    stints_data = get_data(stints_url)
-    stints_hashmap = map_stints_laps(stints_data)
+    # bulk fetch all lap and stint data for a session
+    laps_url = URL_BASE + f'laps?session_key={str(session_key)}'
+    all_laps_data = get_data(laps_url)
 
-    for lap in lap_data:
-        existing = session.exec(
-            select(SessionLaps).where(
-                (SessionLaps.driver_id == driver_id) &
-                (SessionLaps.session_key == lap['session_key']) &
-                (SessionLaps.lap_number == lap['lap_number'])
+    stints_url = URL_BASE + f"stints?session_key={str(session_key)}"
+    all_stints_data = get_data(stints_url)
+
+    # group data for ease of access
+    laps_by_driver = defaultdict(list)
+    for lap in all_laps_data:
+        laps_by_driver[lap['driver_number']].append(lap)
+
+    stints_by_driver = defaultdict(list)
+    for stint in all_stints_data:
+        stints_by_driver[stint['driver_number']].append(stint)
+
+    drivers_url = URL_BASE + f"drivers?session_key={str(session_key)}"
+    all_drivers_data = get_data(drivers_url)
+
+    # ensure all drivers and their session links are in the DB
+    add_drivers_and_session_links(session, session_key, all_drivers_data)
+
+    for driver_data in all_drivers_data:
+        driver_number = driver_data['driver_number']
+        driver_id = driver_data['driver_id']
+
+        # get laps and stints for this driver from our in-memory groups
+        driver_laps = laps_by_driver.get(driver_number, [])
+        driver_stints = stints_by_driver.get(driver_number, [])
+
+        if not driver_laps:
+            continue 
+
+        stints_hashmap = map_stints_laps(driver_stints)
+
+        for lap in driver_laps:
+            existing = session.exec(
+                select(SessionLaps).where(
+                    (SessionLaps.driver_id == driver_id) &
+                    (SessionLaps.session_key == lap['session_key']) &
+                    (SessionLaps.lap_number == lap['lap_number'])
+                )
+            ).first()
+            if existing:
+                continue
+
+            compound = stints_hashmap.get(lap['lap_number'], FALLBACK_COMPOUND)
+
+            new_lap = SessionLaps(
+                driver_id=driver_id,
+                session_key=lap.get('session_key'),
+                lap_number=lap.get('lap_number'),
+                is_pit_out_lap=lap.get('is_pit_out_lap'),
+                lap_time=lap.get('lap_duration', 0.0),
+                st_speed=lap.get('st_speed', 0),
+                compound=compound
             )
-        ).first()
-        if existing:
-            logger.info(f"Lap {lap['lap_number']} already exists, skipping.")
-            continue
-
-        compound = stints_hashmap.get(lap['lap_number'], FALLBACK_COMPOUND)
-
-        new_lap = SessionLaps(
-            driver_id=driver_id,
-            session_key=lap.get('session_key'),
-            lap_number=lap.get('lap_number'),
-            is_pit_out_lap=lap.get('is_pit_out_lap'),
-            lap_time=lap.get('lap_duration', 0.0),
-            st_speed=lap.get('st_speed', 0),
-            compound=compound
-        )
-        session.add(new_lap)
-        logger.info(f"Staged lap {lap['lap_number']} of driver {driver_number} in session {str(session_key)} for addition.")
+            session.add(new_lap)
+    logger.info(f"Staged all laps for session {session_key}.")
 
 def add_session_result_to_db(session:Session, session_key:int):
     """
@@ -173,35 +208,44 @@ def add_session_result_to_db(session:Session, session_key:int):
     """
     data = get_data(URL_BASE + f'session_result?session_key={session_key}')
     for datapoint in data:
-            driver = session.exec(
-                select(Driver).where(Driver.driver_number == datapoint['driver_number'])
-            ).first()
-            if not driver:
-                logger.error(f"Driver with number {datapoint['driver_number']} not found in Driver table.")
-                continue
-
-            existing = session.exec(
-                select(SessionResult).where(
-                    (SessionResult.driver_id == driver.id) &
-                    (SessionResult.session_key == datapoint['session_key'])
-                )
-            ).first()
-            if existing:
-                logger.info(f"Session result for driver {str(datapoint['driver_number'])} in session {str(session_key)} already exists, skipping.")
-                continue
-            sr_entry = SessionResult(
-                meeting_key=datapoint.get('meeting_key'),
-                session_key=datapoint.get('session_key'),
-                driver_id=driver.id,
-                position=datapoint.get('position'),
-                duration=str(datapoint.get('duration')),
-                number_of_laps=datapoint.get('number_of_laps'),
-                gap_to_leader=str(datapoint.get('gap_to_leader')),
-                dnf=datapoint.get('dnf'),
-                dns=datapoint.get('dns'),
-                dsq=datapoint.get('dsq')
+        session_driver_link = session.exec(
+            select(SessionDriver).where(
+                SessionDriver.session_key == session_key,
+                SessionDriver.driver_number == datapoint.get('driver_number')
             )
-            session.add(sr_entry)
+        ).first()
+
+        if not session_driver_link:
+            logger.error(f"Could not find a SessionDriver link for driver number "
+                         f"{datapoint.get('driver_number')} in session {session_key}. Skipping result.")
+            continue
+
+        driver_id = session_driver_link.driver_id
+
+        existing = session.exec(
+            select(SessionResult).where(
+                (SessionResult.driver_id == driver_id) &
+                (SessionResult.session_key == datapoint['session_key'])
+            )
+        ).first()
+
+        if existing:
+            logger.info(f"Session result for driver {str(datapoint['driver_number'])} in session {str(session_key)} already exists, skipping.")
+            continue
+
+        sr_entry = SessionResult(
+            meeting_key=datapoint.get('meeting_key'),
+            session_key=datapoint.get('session_key'),
+            driver_id=driver_id,
+            position=datapoint.get('position'),
+            duration=str(datapoint.get('duration')),
+            number_of_laps=datapoint.get('number_of_laps'),
+            gap_to_leader=str(datapoint.get('gap_to_leader')),
+            dnf=datapoint.get('dnf'),
+            dns=datapoint.get('dns'),
+            dsq=datapoint.get('dsq')
+        )
+        session.add(sr_entry)
     logger.info(f"Staged session results of session {str(session_key)} for addition.")
 
 def update_db():
@@ -227,11 +271,11 @@ def update_db():
         for f1session in data:
             try:
                 with session.begin():
+                    session_key = f1session['session_key']
                     add_session_to_db(session, f1session)
-                    add_session_result_to_db(session, f1session['session_key'])
-                    # the method below also adds the driver's laps to the DB
-                    add_session_drivers_to_db(session, f1session['session_key'])
-                logger.info(f"Comitted all info for session {str(f1session['session_key'])}")
+                    add_all_laps_for_session(session, session_key)
+                    add_session_result_to_db(session, session_key)
+                logger.info(f"Committed all info for session {str(session_key)}")
             except Exception:
                 logger.error(
                     f"Transaction failed for session {str(f1session['session_key'])}",

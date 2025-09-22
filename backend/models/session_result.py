@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Field
 
 
 """
-Database model that Represents an F1Session's result (work in progress, still need to populate this)
+Database model that Represents an F1Session's result"
 """
 
 
@@ -16,9 +16,9 @@ class SessionResult(SQLModel, table=True):
     duration: Optional[str] = Field(default=None)
     number_of_laps: Optional[int] = Field(default=None)
     gap_to_leader: Optional[str] = Field(default=None)
-    dnf: bool = Field(default=False)
-    dns: bool = Field(default=False)
-    dsq: bool = Field(default=False)
+    dnf: bool = Field(default="")
+    dns: bool = Field(default="")
+    dsq: bool = Field(default="")
 
     __table_args__ = (
         PrimaryKeyConstraint("session_key", "driver_id"),
