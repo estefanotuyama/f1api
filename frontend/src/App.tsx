@@ -51,49 +51,55 @@ function App() {
 				/>
 				<div className="drivers-results-grid">
 
-					{/* Drivers Display */}
-					{selectedSession && (
-						<div className="panel">
-							<h2 className="panel-header">Drivers in {selectedEvent?.circuit_name}, {selectedEvent?.country_name} {selectedYear} {selectedSession.session_name}</h2>
-							{loading.drivers && <div className="loading">Loading drivers...</div>}
-							{errors.drivers && <div className="error">{errors.drivers}</div>}
+					<div>
 
-							<div className="drivers-grid">
-								{drivers.map((driver) => (
-									<DriverCard
-										key={driver.driver_number}
-										driver={driver}
-										isSelected={selectedDriver?.driver_number == driver.driver_number}
-										onClick={handleDriverClick}
-									/>
-								))}
+						{selectedSession && (
+							<div className="panel">
+								<h2 className="panel-header">Drivers in {selectedEvent?.circuit_name}, {selectedEvent?.country_name} {selectedYear} {selectedSession.session_name}</h2>
+								{loading.drivers && <div className="loading">Loading drivers...</div>}
+								{errors.drivers && <div className="error">{errors.drivers}</div>}
+
+								<div className="drivers-grid">
+									{drivers.map((driver) => (
+										<DriverCard
+											key={driver.driver_number}
+											driver={driver}
+											isSelected={selectedDriver?.driver_number == driver.driver_number}
+											onClick={handleDriverClick}
+										/>
+									))}
+								</div>
 							</div>
-						</div>
-					)}
+						)}
+
+						{selectedDriver && (
+							<div className="panel">
+								<div className="lap-data-section">
+									<LapDataTable
+										selectedDriver={selectedDriver}
+										driverLaps={driverLaps}
+										loading={loading.laps}
+										error={errors.laps}
+									/>
+								</div>
+							</div>
+
+						)}
+					</div>
 
 					{selectedSession &&
 						<div className="panel">
 							<h2 className="panel-header">Session Result</h2>
-								<SessionResultTable
-									sessionResult={sessionResult}
-									loading={loading.sessionResult}
-									error={errors.sessionResult}
-								/>
+							<SessionResultTable
+								sessionResult={sessionResult}
+								loading={loading.sessionResult}
+								error={errors.sessionResult}
+							/>
 						</div>
 					}
 				</div>
 
-				{/* Lap Data Display */}
-				{selectedDriver && (
-					<div className="lap-data-section">
-						<LapDataTable
-							selectedDriver={selectedDriver}
-							driverLaps={driverLaps}
-							loading={loading.laps}
-							error={errors.laps}
-						/>
-					</div>
-				)}
+
 			</main>
 		</div>
 	)

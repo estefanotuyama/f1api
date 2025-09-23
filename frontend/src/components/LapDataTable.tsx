@@ -15,7 +15,7 @@ export const LapDataTable = ({ selectedDriver, driverLaps, loading, error }: Lap
 	}
 
 	return (
-		<div className="panel lap-data-section">
+		<div className="panel-lap-data">
 			<h2 className="panel-header">
 				Lap Data for {selectedDriver.first_name} {selectedDriver.last_name}
 				<br />
@@ -28,7 +28,7 @@ export const LapDataTable = ({ selectedDriver, driverLaps, loading, error }: Lap
 			{error && <div className="error">{error}</div>}
 
 			{driverLaps && driverLaps.laps.length > 0 && (
-				<div className="results-table-container">
+				<div className="data-table-container">
 					<table className="data-table">
 						<thead>
 							<tr>

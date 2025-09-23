@@ -81,7 +81,6 @@ body {
 /* --- Lap Data Section (full width below main grid) --- */
 .lap-data-section {
   width: 100%;
-  margin-top: var(--space-xl);
 }
 
 /* ==========================================================================
@@ -94,6 +93,15 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--space-lg);
+  height: fit-content;
+}
+
+.panel + .panel {
+  margin-top: var(--space-xl);
+}
+
+.panel-lap-data {
+  background-color: var(--color-surface-1);
   height: fit-content;
 }
 
@@ -253,6 +261,12 @@ body {
   overflow-x: auto;
 }
 
+.data-table-container {
+  width: 100%;
+  max-height: 615px;
+  overflow-y: auto;
+}
+
 /* --- Data Table (for Laps and Results) --- */
 .data-table {
   width: 100%;
@@ -275,6 +289,9 @@ body {
   font-size: 0.9rem;
   text-transform: uppercase;
   color: var(--color-text-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .data-table tbody tr:hover {

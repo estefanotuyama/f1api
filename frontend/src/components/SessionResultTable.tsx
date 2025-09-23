@@ -1,23 +1,10 @@
-import { DriverSessionResult, SessionResultData } from "../types"
-import { formatLapTime, formatGap } from "../utils";
+import { SessionResultData } from "../types"
+import { formatTime, solveDriverStatus } from "../utils"
 
 interface SessionResultProps {
 	sessionResult: SessionResultData | null
 	loading: boolean
 	error: string
-}
-
-const solveDriverStatus = (driver: DriverSessionResult) => {
-	if (driver.dnf) {
-		return `${driver.number_of_laps} (DNF)`
-	}
-	else if (driver.dns) {
-		return "DNS"
-	}
-	else if (driver.dsq) {
-		return "DSQ"
-	}
-	return driver.number_of_laps
 }
 
 export const SessionResultTable = ({ sessionResult, loading, error }: SessionResultProps) => {
@@ -51,7 +38,7 @@ export const SessionResultTable = ({ sessionResult, loading, error }: SessionRes
 							<td>{driver.position}</td>
 							<td>{`${driver.first_name} ${driver.last_name}`}</td>
 							<td>{driver.team}</td>
-							<td>{driver.position === 1 ? driver.duration : driver.gap_to_leader}</td>
+							<td>{formatTime(driver)}</td>
 							<td>{solveDriverStatus(driver)}</td>
 						</tr>
 					))}

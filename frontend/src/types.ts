@@ -51,7 +51,7 @@ export interface DriverSessionResult {
 	first_name: string
 	last_name: string
 	number_of_laps: number
-	gap_to_leader: number
+	gap_to_leader: string
 	duration: number
 	dnf: boolean
 	dns: boolean
