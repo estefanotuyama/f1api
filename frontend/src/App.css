@@ -320,13 +320,229 @@ body {
   border: 1px solid var(--color-danger);
 }
 
-.note {
-	fontSize: 0.8rem;
-	color: var(--color-text-secondary);
-	font-weight: normal;
-	marginTop: var(--space-sm);
+/* Lap time chart */
+.custom-tooltip {
+  background-color: rgba(30, 30, 30, 0.9);
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 12px;
+  color: #f0f0f0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+.custom-tooltip .tooltip-label {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.custom-tooltip p {
+  margin: 4px 0;
+}
+
+.lap-chart-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+}
+
+.lap-chart-container::-webkit-scrollbar {
+  height: 10px;
+}
+
+.lap-chart-container::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.chart-content {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.lap-chart-inner {
+  display: block;
+}
+
+.note {
+  font-size: 0.9rem;
+  color: #a9a9a9;
+  font-weight: 400;
+}
+/* === Layout fixes to keep chart contained and prevent parent expansion === */
+
+/* Ensure grid children may shrink (prevents wide children from expanding the whole grid) */
+.drivers-results-grid,
+.drivers-results-grid > *,
+.drivers-results-grid > div,
+.panel {
+  min-width: 0; /* KEY: allow children to shrink below content width */
+}
+
+/* Make sure the drivers column (left) is allowed to be fixed width and not grow with contents.
+   The selector targets the first child of the grid which contains the drivers + lap chart. */
+.drivers-results-grid > :first-child {
+  min-width: 0;
+  /* keeps layout predictable in grid/flex contexts */
+}
+
+/* Outer stable container for the chart: this should be measured by the JS (outerRef).
+   Hide horizontal overflow here so the page layout won't stretch. */
+.chart-content {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;   /* IMPORTANT: outer wrapper must NOT scroll/expand */
+  min-width: 0;
+}
+
+/* The actual scroll container that allows the chart to be wider than the column.
+   The wide child (.lap-chart-inner) will be scrolled inside this element. */
+.lap-chart-container {
+  width: 100%;
+  overflow-x: auto;    /* ONLY this element scrolls horizontally */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+}
+
+/* The inner chart element receives the large inline width from JS (chartInnerWidth).
+   Keep it from forcing parents to expand by ensuring it is block-level and has no implicit min-width. */
+.lap-chart-inner {
+  display: block;
+  min-width: 0; /* ensure the inner width doesn't propagate to parents */
+}
+
+/* Small safety: make driver grid itself allowed to shrink (keeps columns stable) */
+.drivers-grid {
+  min-width: 0;
+}
+
+/* Optional: ensure panels inside grid don't push width */
+.panel + .panel,
+.panel {
+  min-width: 0;
+}
+
+.outlier-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    background-color: var(--color-surface-1);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--space-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
+.outlier-controls-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.outlier-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition);
+}
+
+.outlier-toggle-label:hover {
+    color: var(--color-accent);
+}
+
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 2px solid transparent;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.toggle-switch.active {
+    background-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+}
+
+.toggle-switch.inactive {
+    background-color: var(--color-surface-2);
+}
+
+.toggle-switch:hover {
+    transform: scale(1.02);
+}
+
+.toggle-switch-knob {
+    position: absolute;
+    top: 2px;
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-text-primary);
+    border-radius: 50%;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.toggle-switch-knob.active {
+    left: 22px;
+}
+
+.toggle-switch-knob.inactive {
+    left: 2px;
+}
+
+.outlier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid;
+    transition: var(--transition);
+}
+
+.outlier-badge.has-outliers {
+    background-color: rgba(255, 107, 53, 0.1);
+    color: var(--color-accent);
+    border-color: rgba(255, 107, 53, 0.3);
+}
+
+.outlier-badge.no-outliers {
+    background-color: rgba(0, 196, 159, 0.1);
+    color: #00C49F;
+    border-color: rgba(0, 196, 159, 0.3);
+}
+
+.outlier-badge-dot {
+    font-size: 0.7rem;
+}
+
+.outlier-threshold-info {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.chart-note {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-md) 0;
+    font-style: italic;
+    opacity: 0.9;
+}
 /* ==========================================================================
    5. Responsive Design (IMPROVED FOR BETTER MOBILE EXPERIENCE)
    ========================================================================== */

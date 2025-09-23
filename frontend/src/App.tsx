@@ -5,7 +5,7 @@ import { DriverCard } from "./components/DriverCard";
 import { Controls } from "./components/Controls";
 import { SessionResultTable } from "./components/SessionResultTable";
 import { useF1Data } from "./hooks/useF1Data";
-import { LapDataTable } from "./components/LapDataTable";
+import { LapTimeChart } from "./components/LapTimeChart";
 
 function App() {
 	// State for dropdowns
@@ -74,16 +74,13 @@ function App() {
 
 						{selectedDriver && (
 							<div className="panel">
-								<div className="lap-data-section">
-									<LapDataTable
-										selectedDriver={selectedDriver}
-										driverLaps={driverLaps}
-										loading={loading.laps}
-										error={errors.laps}
-									/>
-								</div>
+								<LapTimeChart
+									selectedDriver={selectedDriver}
+									driverLaps={driverLaps}
+									loading={loading.laps}
+									error={errors.laps}
+								/>
 							</div>
-
 						)}
 					</div>
 
