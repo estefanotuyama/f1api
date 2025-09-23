@@ -3,14 +3,14 @@
    ========================================================================== */
 :root {
   /* Color Palette */
-  --color-background: #0f0f0f;
-  --color-surface-1: #1a1a1a; /* For main panels, cards */
-  --color-surface-2: #2a2a2a; /* For inputs, table headers */
-  --color-border: #333;
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #cccccc;
-  --color-accent: #ff6b35; /* A slightly softer, modern orange-red */
-  --color-danger: #ff4444;
+  --color-background: #1D1F22;   /* Main background replaced */
+  --color-surface-1: #2A2C30;    /* Slightly lighter than background, for panels/cards */
+  --color-surface-2: #3A3C40;    /* For inputs, table headers, secondary surfaces */
+  --color-border: #555;           /* Borders stand out against dark background */
+  --color-text-primary: #FFFFFF;  /* Main text */
+  --color-text-secondary: #CCCCCC;/* Secondary text */
+  --color-accent: #FF6B35;        /* Modern orange-red accent */
+  --color-danger: #FF4444;        /* Danger / error states */
 
   /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
@@ -50,12 +50,19 @@ body {
 /* ==========================================================================
    3. App Layout
    ========================================================================== */
+.logo {
+  height: 100px;
+  width: auto;
+}
+
 .app-header {
   background-color: var(--color-surface-1);
-  padding: var(--space-lg) var(--space-xl);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .app-header h1 {
@@ -72,7 +79,7 @@ body {
 /* --- Main Grid Layout (IMPROVED: More space for drivers) --- */
 .drivers-results-grid {
   display: grid;
-  grid-template-columns: 2.5fr 1fr; /* Changed from 1fr 1fr to give more space to drivers */
+  grid-template-columns: 2fr 1fr; /* Changed from 1fr 1fr to give more space to drivers */
   gap: var(--space-xl);
   align-items: start;
   margin-bottom: var(--space-xl);

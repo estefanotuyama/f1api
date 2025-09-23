@@ -31,7 +31,8 @@ function App() {
 	return (
 		<div className="app">
 			<header className="app-header">
-				<h1>Formula 1 Data Explorer</h1>
+				<img className="logo" src="/f1dataxplorerlogo-side.png" />
+				{/*<h1>Formula 1 Data Explorer</h1>*/}
 			</header>
 
 			<main className="main-content">
