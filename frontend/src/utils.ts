@@ -4,3 +4,6 @@ export const formatLapTime = (time: number) => {
 	return `${minutes}:${seconds.padStart(6, "0")}`;
 };
 
+export const formatGap = (gap: number) => {
+	return `+${gap.toFixed(3)}s`;
+};

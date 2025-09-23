@@ -45,3 +45,19 @@ export interface DriverLapsData {
 	laps: LapData[]
 }
 
+export interface DriverSessionResult {
+	position: number
+	team: string
+	first_name: string
+	last_name: string
+	number_of_laps: number
+	gap_to_leader: number
+	duration: number
+	dnf: boolean
+	dns: boolean
+	dsq: boolean
+}
+
+export interface SessionResultData {
+	result: DriverSessionResult[]
+}

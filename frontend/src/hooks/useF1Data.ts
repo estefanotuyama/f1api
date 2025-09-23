@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Driver, F1Session, LapData, DriverLapsData, Event } from "../types";
+import { Driver, F1Session, LapData, DriverLapsData, Event, SessionResultData } from "../types";
 
 const API_BASE_URL = "http://localhost:8000";
 
@@ -9,6 +9,7 @@ export const useF1Data = () => {
 	const [events, setEvents] = useState<Event[]>([]);
 	const [sessions, setSessions] = useState<F1Session[]>([]);
 	const [drivers, setDrivers] = useState<Driver[]>([]);
+	const [sessionResult, setSessionResult] = useState<SessionResultData | null>(null);
 
 	// State for selections
 	const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -26,6 +27,7 @@ export const useF1Data = () => {
 		sessions: false,
 		drivers: false,
 		laps: false,
+		sessionResult: false
 	});
 	const [errors, setErrors] = useState({
 		years: "",
@@ -33,6 +35,7 @@ export const useF1Data = () => {
 		sessions: "",
 		drivers: "",
 		laps: "",
+		sessionResult: ""
 	});
 
 	// Fetch available years on component mount
@@ -137,6 +140,27 @@ export const useF1Data = () => {
 		}
 	}
 
+	const fetchSessionResult = async (sessionKey: number) => {
+		setLoading((prev) => ({ ...prev, sessionResult: true }));
+		setErrors((prev) => ({ ...prev, sessionResult: "" }));
+
+		try {
+			const response = await fetch(`${API_BASE_URL}/session_result/${sessionKey}`);
+			if (!response.ok) throw new Error("Failed to retrieve session result.");
+
+			const data = await response.json();
+			if (data.length === 0) {
+				setErrors((prev) => ({ ...prev, sessionResult: "No session result available for this session" }));
+			}
+			setSessionResult(data);
+		} catch (error) {
+			setErrors((prev) => ({ ...prev, sessionResult: "Failed to load session result data" }))
+		} finally {
+			setLoading((prev) => ({ ...prev, sessionResult: false }))
+		}
+	}
+
+
 	// Handle dropdown changes
 	const handleYearChange = (year: number) => {
 		setSelectedYear(year)
@@ -165,7 +189,9 @@ export const useF1Data = () => {
 		setSelectedDriver(null)
 		setDrivers([])
 		setDriverLaps(null)
+
 		fetchDrivers(session.session_key)
+		fetchSessionResult(session.session_key)
 	};
 
 	const handleDriverClick = (driver: Driver) => {
@@ -177,11 +203,11 @@ export const useF1Data = () => {
 	};
 
 	return {
-		years, events, sessions, drivers,
+		years, events, sessions, drivers, sessionResult,
 		selectedYear, selectedEvent, selectedSession, selectedDriver,
 		driverLaps,
 		loading, errors,
-		handleYearChange, handleEventChange, handleSessionChange, handleDriverClick
+		handleYearChange, handleEventChange, handleSessionChange, handleDriverClick,
 	};
 
 };

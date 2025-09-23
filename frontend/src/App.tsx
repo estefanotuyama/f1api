@@ -3,6 +3,7 @@
 import "./App.css";
 import { DriverCard } from "./components/DriverCard";
 import { Controls } from "./components/Controls";
+import { SessionResultTable } from "./components/SessionResultTable";
 import { useF1Data } from "./hooks/useF1Data";
 import { LapDataTable } from "./components/LapDataTable";
 
@@ -13,6 +14,7 @@ function App() {
 		events,
 		sessions,
 		drivers,
+		sessionResult,
 		selectedYear,
 		selectedEvent,
 		selectedSession,
@@ -69,13 +71,14 @@ function App() {
 						</div>
 					)}
 
-					{/* Results table */}
 					{selectedSession &&
 						<div className="panel">
 							<h2 className="panel-header">Session Result</h2>
-							<div className="results-table-container">
-
-							</div>
+								<SessionResultTable
+									sessionResult={sessionResult}
+									loading={loading.sessionResult}
+									error={errors.sessionResult}
+								/>
 						</div>
 					}
 				</div>
