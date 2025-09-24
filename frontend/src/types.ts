@@ -65,3 +65,5 @@ export interface SessionResultData {
 export interface MultipleDriverLapsData {
 	[driverNumber: number]: DriverLapsData
 }
+
+export type TeamColors = Record<string, string>;

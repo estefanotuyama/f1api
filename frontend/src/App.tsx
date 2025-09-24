@@ -20,6 +20,7 @@ function App() {
 		selectedSession,
 		selectedDrivers,
 		driverLaps,
+		teamColors,
 		loading,
 		errors,
 		handleYearChange,
@@ -33,7 +34,6 @@ function App() {
 
 			<header className="app-header">
 				<img className="logo" src="/f1dataxplorerlogo-side.png" />
-				{/*<h1>Formula 1 Data Explorer</h1>*/}
 			</header>
 
 			<main className="main-content">
@@ -58,7 +58,7 @@ function App() {
 								<h2 className="panel-header">
 									Drivers in {selectedEvent?.circuit_name}, {selectedEvent?.country_name} {selectedYear}{" "}
 									{selectedSession.session_name}
-									i								</h2>
+								</h2>
 								{loading.drivers && <div className="loading">Loading drivers...</div>}
 								{errors.drivers && <div className="error">{errors.drivers}</div>}
 
@@ -82,6 +82,7 @@ function App() {
 									driverLaps={driverLaps}
 									loading={loading.laps}
 									error={errors.laps}
+									teamColors={teamColors}
 								/>
 							</div>
 						)}

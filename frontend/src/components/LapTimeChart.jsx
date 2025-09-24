@@ -2,7 +2,6 @@
 import { useRef, useState, useEffect } from "react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from "recharts"
 import ReactDOM from "react-dom"
-import { Toaster } from "react-hot-toast"
 
 /* ---------- Helpers ---------- */
 function parseTimeToSeconds(timeInput) {
@@ -38,9 +37,9 @@ function getCompoundColor(compound) {
 	return "#999999"
 }
 
-function getDriverColor(driverIndex) {
+function fallbackColors(index) {
 	const colors = ["#8884d8", "#82ca9d"]
-	return colors[driverIndex] || "#999999"
+	return colors[index] || "#999999"
 }
 
 /* ---------- Custom tooltip & dot ---------- */
@@ -138,28 +137,43 @@ const CustomDot = (props) => {
 }
 
 /* ---------- Custom Legend Component ---------- */
-const CustomLegend = ({ driverData }) => {
-	if (!driverData || Object.keys(driverData).length <= 1) return null
+const CustomLegend = ({ driverData, teamColors }) => {
+	if (!driverData || Object.keys(driverData).length <= 1 || !teamColors) return null
 
 	return (
 		<div className="chart-legend">
-			{Object.entries(driverData).map(([driverNumber, data], index) => (
-				<div key={driverNumber} className="legend-item">
-					<div className="legend-color" style={{ backgroundColor: getDriverColor(index) }} />
-					<span className="legend-text">
-						{data.driver.first_name} {data.driver.last_name}
-					</span>
-				</div>
-			))}
+			{Object.entries(driverData).map(([driverNumber, data], index) => {
+				const stroke = teamColors && teamColors[data.driver.team] ? teamColors[data.driver.team] : fallbackColors(index)
+				const strokeDasharray = index === 1 ? "5 5" : "0"
+
+				return (
+					<div key={driverNumber} className="legend-item">
+						<svg width="25" height="3" className="legend-color">
+							<line
+								x1="0"
+								y1="1.5"
+								x2="25"
+								y2="1.5"
+								stroke={stroke}
+								strokeWidth="2"
+								strokeDasharray={strokeDasharray}
+							/>
+						</svg>
+						<span className="legend-text">
+							{data.driver.first_name} {data.driver.last_name}
+						</span>
+					</div>
+				)
+			})}
 		</div>
 	)
 }
 
 /* ---------- Main ---------- */
-export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error }) => {
+export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error, teamColors }) => {
 	const outerRef = useRef(null) // stable parent (visible width)
 	const [containerWidth, setContainerWidth] = useState(800)
-	const [driverData, setDriverData] = useState({}) // Declare driverData variable
+	const [driverData, setDriverData] = useState({})
 
 	// Toggle to exclude outliers from Y-scale (default ON)
 	const [excludeOutliers, setExcludeOutliers] = useState(true)
@@ -182,6 +196,7 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error }) =>
 						speedTrap: lap.speed_trap,
 						compound: lap.compound,
 						pitOut: lap.is_pit_out_lap,
+						team: lap.team,
 					})),
 				}
 			}
@@ -338,7 +353,7 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error }) =>
 					Scroll horizontally to view all data.
 				</p>
 
-				<CustomLegend driverData={driverData} />
+				<CustomLegend driverData={driverData} teamColors={teamColors} />
 				<div className="lap-chart-container" style={{ overflowX: "auto", paddingTop: 12 }}>
 
 					<div
@@ -391,7 +406,7 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error }) =>
 								allowEscapeViewBox={{ x: true, y: true }}
 							/>
 
-							{bestLapNumber != null && (
+							{bestLapNumber != null && selectedDrivers.length === 1 && (
 								<ReferenceLine
 									x={bestLapNumber}
 									label={{
@@ -412,8 +427,9 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error }) =>
 									key={driverNumber}
 									type="linear"
 									dataKey={`driver${driverNumber}`}
-									stroke={getDriverColor(index)}
+									stroke={teamColors && teamColors[data.driver.team] ? teamColors[data.driver.team] : fallbackColors(index)}
 									strokeWidth={2}
+									strokeDasharray={index === 1 ? "5 5" : "0"}
 									name={`${data.driver.first_name} ${data.driver.last_name}`}
 									dot={<CustomDot />}
 									connectNulls={false}

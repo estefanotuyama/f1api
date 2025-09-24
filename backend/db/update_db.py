@@ -1,3 +1,4 @@
+from sqlalchemy.orm import exc
 from backend.models.driver import Driver
 from backend.models.session_driver import SessionDriver
 from backend.models.events import Event
@@ -7,8 +8,10 @@ from backend.models.session_laps import SessionLaps
 from backend.models.session_result import SessionResult
 from backend.models.sessions import F1Session
 from sqlalchemy import select
-from sqlmodel import Session, select, desc
+from sqlmodel import Session, distinct, select, desc
 from collections import defaultdict
+
+from backend.models.teams import Teams
 
 """
 This is the script that updates the database.
@@ -253,6 +256,29 @@ def add_session_result_to_db(session:Session, session_key:int):
         session.add(sr_entry)
     logger.info(f"Staged session results of session {str(session_key)} for addition.")
 
+def add_teams_colors(session:Session):
+    try: 
+        teams = session.exec(select(distinct(SessionDriver.team)))
+
+        for team in teams:
+            if not team:
+                continue
+            team_fmt = team.replace(' ', '%20')
+            data = get_data(URL_BASE + f'drivers?team_name={team_fmt}')[0]
+            if not data :
+                continue
+            team_colour = data.get('team_colour')
+
+            team = Teams(
+                name=team,
+                color=f'#{team_colour}'
+            )
+            session.add(team)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error while adding teams to the DB: {e}")
+
 def update_db():
     """
     Controls the flow to update the database, calling all necessary methods.
@@ -290,6 +316,7 @@ def update_db():
                     exc_info=True,
                 )
                 break
+        add_teams_colors(session)
 
 if __name__ == "__main__":
     from .database import create_db_and_tables

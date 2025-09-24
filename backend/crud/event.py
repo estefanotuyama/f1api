@@ -1,5 +1,6 @@
 from sqlmodel import Session, select
 from backend.models.events import Event
+from backend.models.teams import Teams
 
 
 def get_events_from_year(session:Session, year: int):
@@ -19,3 +20,9 @@ def get_available_years(session):
     """
     years = session.exec(select(Event.year)).all()
     return sorted(set(years))
+
+def get_teams(session):
+    teams = session.exec(select(Teams)).all()
+
+    team_map = {team.name : team.color for team in teams}
+    return team_map

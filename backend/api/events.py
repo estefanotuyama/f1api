@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.crud.event import get_events_from_year, get_available_years
+from backend.crud.event import get_events_from_year, get_available_years, get_teams
 from backend.db.db_utils import SessionDep
 
 router = APIRouter()
@@ -16,3 +16,7 @@ def read_events(session: SessionDep, year: int):
             description="Accesses de DB and returns all years for which we have data.")
 def read_available_years(session: SessionDep):
     return get_available_years(session)
+
+@router.get("/teams/")
+def read_teams(session: SessionDep):
+    return get_teams(session)

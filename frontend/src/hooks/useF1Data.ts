@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { Driver, F1Session, Event, SessionResultData, MultipleDriverLapsData } from "../types"
+import type { Driver, F1Session, Event, SessionResultData, MultipleDriverLapsData, TeamColors } from "../types"
 
-const API_BASE_URL = "http://localhost:8000"
+export const API_BASE_URL = "http://localhost:8000"
 
 export const useF1Data = () => {
 	const [years, setYears] = useState<number[]>([])
@@ -11,6 +11,7 @@ export const useF1Data = () => {
 	const [sessions, setSessions] = useState<F1Session[]>([])
 	const [drivers, setDrivers] = useState<Driver[]>([])
 	const [sessionResult, setSessionResult] = useState<SessionResultData | null>(null)
+	const [teamColors, setTeamColors] = useState<TeamColors | null>(null)
 
 	// State for selections
 	const [selectedYear, setSelectedYear] = useState<number | null>(null)
@@ -29,6 +30,7 @@ export const useF1Data = () => {
 		drivers: false,
 		laps: false,
 		sessionResult: false,
+		teamColors: false,
 	})
 	const [errors, setErrors] = useState({
 		years: "",
@@ -37,12 +39,31 @@ export const useF1Data = () => {
 		drivers: "",
 		laps: "",
 		sessionResult: "",
+		teamColors: "",
 	})
 
 	// Fetch available years on component mount
 	useEffect(() => {
 		fetchYears()
+		fetchTeamColors()
 	}, [])
+
+	const fetchTeamColors = async () => {
+		setLoading((prev) => ({ ...prev, teamColors: true }))
+		setErrors((prev) => ({ ...prev, teamColors: "" }))
+
+		try {
+			const response = await fetch(`${API_BASE_URL}/teams/`)
+			if (!response.ok) throw new Error("Failed to fetch team colors")
+
+			const data = await response.json()
+			setTeamColors(data)
+		} catch (error) {
+			setErrors((prev) => ({ ...prev, teamColors: "Failed to load team colors" }))
+		} finally {
+			setLoading((prev) => ({ ...prev, teamColors: false }))
+		}
+	}
 
 	const fetchYears = async () => {
 		setLoading((prev) => ({ ...prev, years: true }))
@@ -241,6 +262,7 @@ export const useF1Data = () => {
 		selectedSession,
 		selectedDrivers,
 		driverLaps,
+		teamColors,
 		loading,
 		errors,
 		handleYearChange,
