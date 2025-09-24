@@ -61,3 +61,7 @@ export interface DriverSessionResult {
 export interface SessionResultData {
 	result: DriverSessionResult[]
 }
+
+export interface MultipleDriverLapsData {
+	[driverNumber: number]: DriverLapsData
+}

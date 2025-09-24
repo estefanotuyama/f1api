@@ -3,14 +3,14 @@
    ========================================================================== */
 :root {
   /* Color Palette */
-  --color-background: #1D1F22;   /* Main background replaced */
-  --color-surface-1: #2A2C30;    /* Slightly lighter than background, for panels/cards */
-  --color-surface-2: #3A3C40;    /* For inputs, table headers, secondary surfaces */
-  --color-border: #555;           /* Borders stand out against dark background */
-  --color-text-primary: #FFFFFF;  /* Main text */
-  --color-text-secondary: #CCCCCC;/* Secondary text */
-  --color-accent: #FF6B35;        /* Modern orange-red accent */
-  --color-danger: #FF4444;        /* Danger / error states */
+  --color-background: #1d1f22; /* Main background replaced */
+  --color-surface-1: #2a2c30; /* Slightly lighter than background, for panels/cards */
+  --color-surface-2: #3a3c40; /* For inputs, table headers, secondary surfaces */
+  --color-border: #555; /* Borders stand out against dark background */
+  --color-text-primary: #ffffff; /* Main text */
+  --color-text-secondary: #cccccc; /* Secondary text */
+  --color-accent: #ff6b35; /* Modern orange-red accent */
+  --color-danger: #ff4444; /* Danger / error states */
 
   /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
@@ -152,6 +152,16 @@ body {
   font-size: 1rem;
   cursor: pointer;
   transition: var(--transition);
+
+  /* Cross-browser standardization */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23CCCCCC' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right var(--space-md) center;
+  background-size: 16px;
+  padding-right: calc(var(--space-md) + 24px);
 }
 
 .dropdown-container select:hover {
@@ -377,8 +387,44 @@ body {
   color: #a9a9a9;
   font-weight: 400;
 }
-/* === Layout fixes to keep chart contained and prevent parent expansion === */
 
+/* ==========================================================================
+   Chart Legend Styles
+   ========================================================================== */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-lg);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.legend-color {
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 768px) {
+  .chart-legend {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+}
+
+/* === Layout fixes to keep chart contained and prevent parent expansion === */
 /* Ensure grid children may shrink (prevents wide children from expanding the whole grid) */
 .drivers-results-grid,
 .drivers-results-grid > *,
@@ -399,7 +445,7 @@ body {
 .chart-content {
   width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden;   /* IMPORTANT: outer wrapper must NOT scroll/expand */
+  overflow-x: hidden; /* IMPORTANT: outer wrapper must NOT scroll/expand */
   min-width: 0;
 }
 
@@ -407,7 +453,7 @@ body {
    The wide child (.lap-chart-inner) will be scrolled inside this element. */
 .lap-chart-container {
   width: 100%;
-  overflow-x: auto;    /* ONLY this element scrolls horizontally */
+  overflow-x: auto; /* ONLY this element scrolls horizontally */
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   min-width: 0;
@@ -432,123 +478,123 @@ body {
 }
 
 .outlier-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-md);
-    background-color: var(--color-surface-1);
-    border-radius: var(--border-radius);
-    margin-bottom: var(--space-md);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  background-color: var(--color-surface-1);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-md);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .outlier-controls-left {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
 }
 
 .outlier-toggle-label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    cursor: pointer;
-    user-select: none;
-    transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
 }
 
 .outlier-toggle-label:hover {
-    color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .toggle-switch {
-    position: relative;
-    width: 44px;
-    height: 24px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: var(--transition);
-    border: 2px solid transparent;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid transparent;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .toggle-switch.active {
-    background-color: var(--color-accent);
-    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+  background-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
 }
 
 .toggle-switch.inactive {
-    background-color: var(--color-surface-2);
+  background-color: var(--color-surface-2);
 }
 
 .toggle-switch:hover {
-    transform: scale(1.02);
+  transform: scale(1.02);
 }
 
 .toggle-switch-knob {
-    position: absolute;
-    top: 2px;
-    width: 16px;
-    height: 16px;
-    background-color: var(--color-text-primary);
-    border-radius: 50%;
-    transition: var(--transition);
-    box-shadow: var(--shadow-sm);
+  position: absolute;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-text-primary);
+  border-radius: 50%;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
 }
 
 .toggle-switch-knob.active {
-    left: 22px;
+  left: 22px;
 }
 
 .toggle-switch-knob.inactive {
-    left: 2px;
+  left: 2px;
 }
 
 .outlier-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: var(--space-sm) var(--space-md);
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border: 1px solid;
-    transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid;
+  transition: var(--transition);
 }
 
 .outlier-badge.has-outliers {
-    background-color: rgba(255, 107, 53, 0.1);
-    color: var(--color-accent);
-    border-color: rgba(255, 107, 53, 0.3);
+  background-color: rgba(255, 107, 53, 0.1);
+  color: var(--color-accent);
+  border-color: rgba(255, 107, 53, 0.3);
 }
 
 .outlier-badge.no-outliers {
-    background-color: rgba(0, 196, 159, 0.1);
-    color: #00C49F;
-    border-color: rgba(0, 196, 159, 0.3);
+  background-color: rgba(0, 196, 159, 0.1);
+  color: #00c49f;
+  border-color: rgba(0, 196, 159, 0.3);
 }
 
 .outlier-badge-dot {
-    font-size: 0.7rem;
+  font-size: 0.7rem;
 }
 
 .outlier-threshold-info {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    opacity: 0.8;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  opacity: 0.8;
 }
 
 .chart-note {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--space-md) 0;
-    font-style: italic;
-    opacity: 0.9;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-md) 0;
+  font-style: italic;
+  opacity: 0.9;
 }
 /* ==========================================================================
    5. Responsive Design (IMPROVED FOR BETTER MOBILE EXPERIENCE)

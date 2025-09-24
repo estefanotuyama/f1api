@@ -25,7 +25,7 @@ export const SessionResultTable = ({ sessionResult, loading, error }: SessionRes
 			<table className="data-table">
 				<thead>
 					<tr>
-						<th>Position</th>
+						<th>Pos</th>
 						<th>Driver</th>
 						<th>Team</th>
 						<th>Gap to leader</th>

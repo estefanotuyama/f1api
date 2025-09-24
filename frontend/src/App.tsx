@@ -1,14 +1,14 @@
+
 "use client"
 
-import "./App.css";
-import { DriverCard } from "./components/DriverCard";
-import { Controls } from "./components/Controls";
-import { SessionResultTable } from "./components/SessionResultTable";
-import { useF1Data } from "./hooks/useF1Data";
-import { LapTimeChart } from "./components/LapTimeChart";
+import "./App.css"
+import { DriverCard } from "./components/DriverCard"
+import { Controls } from "./components/Controls"
+import { SessionResultTable } from "./components/SessionResultTable"
+import { useF1Data } from "./hooks/useF1Data"
+import { LapTimeChart } from "./components/LapTimeChart"
 
 function App() {
-	// State for dropdowns
 	const {
 		years,
 		events,
@@ -18,7 +18,7 @@ function App() {
 		selectedYear,
 		selectedEvent,
 		selectedSession,
-		selectedDriver,
+		selectedDrivers,
 		driverLaps,
 		loading,
 		errors,
@@ -26,10 +26,11 @@ function App() {
 		handleEventChange,
 		handleSessionChange,
 		handleDriverClick,
-	} = useF1Data();
+	} = useF1Data()
 
 	return (
 		<div className="app">
+
 			<header className="app-header">
 				<img className="logo" src="/f1dataxplorerlogo-side.png" />
 				{/*<h1>Formula 1 Data Explorer</h1>*/}
@@ -51,12 +52,13 @@ function App() {
 					onSessionChange={handleSessionChange}
 				/>
 				<div className="drivers-results-grid">
-
 					<div>
-
 						{selectedSession && (
 							<div className="panel">
-								<h2 className="panel-header">Drivers in {selectedEvent?.circuit_name}, {selectedEvent?.country_name} {selectedYear} {selectedSession.session_name}</h2>
+								<h2 className="panel-header">
+									Drivers in {selectedEvent?.circuit_name}, {selectedEvent?.country_name} {selectedYear}{" "}
+									{selectedSession.session_name}
+									i								</h2>
 								{loading.drivers && <div className="loading">Loading drivers...</div>}
 								{errors.drivers && <div className="error">{errors.drivers}</div>}
 
@@ -65,7 +67,7 @@ function App() {
 										<DriverCard
 											key={driver.driver_number}
 											driver={driver}
-											isSelected={selectedDriver?.driver_number == driver.driver_number}
+											isSelected={selectedDrivers.some((d) => d.driver_number === driver.driver_number)}
 											onClick={handleDriverClick}
 										/>
 									))}
@@ -73,10 +75,10 @@ function App() {
 							</div>
 						)}
 
-						{selectedDriver && (
+						{selectedDrivers.length > 0 && (
 							<div className="panel">
 								<LapTimeChart
-									selectedDriver={selectedDriver}
+									selectedDrivers={selectedDrivers}
 									driverLaps={driverLaps}
 									loading={loading.laps}
 									error={errors.laps}
@@ -85,7 +87,7 @@ function App() {
 						)}
 					</div>
 
-					{selectedSession &&
+					{selectedSession && (
 						<div className="panel">
 							<h2 className="panel-header">Session Result</h2>
 							<SessionResultTable
@@ -94,13 +96,12 @@ function App() {
 								error={errors.sessionResult}
 							/>
 						</div>
-					}
+					)}
 				</div>
-
-
 			</main>
 		</div>
 	)
 }
 
 export default App
+

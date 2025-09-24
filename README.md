@@ -1,4 +1,4 @@
-# 🏎️ F1 Stats API v0.2
+# 🏎️ F1 Stats API v0.6
 
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/fastapi-0.110-green)
@@ -92,7 +92,7 @@ python -m backend.db.update_db
 
 ### 6\. 🧪 Run the API Server
 
-From the root directory, start the development server with:
+From the root directory (with the venv active), start the development server with:
 
 ```bash
 uvicorn backend.main:app --reload
@@ -120,9 +120,7 @@ Now, you can access the application at http://localhost:3000
   - [x] Add driver, session, and lap time API routes (in progress)
   - [x] Write tests using `pytest`
   - [x] Add simple Front-End
-  - [ ] Add session stats feature
-  - [ ] Add AI integration
-  - [ ] Implement filtering for API endpoints
+  - [x] Add session stats feature
   - [x] Convert to PostgreSQL
   - [ ] Deploy to a cloud service
 

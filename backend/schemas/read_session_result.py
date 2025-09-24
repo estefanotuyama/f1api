@@ -7,7 +7,7 @@ class DriverPosition(BaseModel):
     team: str
     first_name: str
     last_name: str
-    number_of_laps: int
+    number_of_laps: int | None = 0
     gap_to_leader: float | str | None = None
     duration: float | str | None = None
     dnf: bool
