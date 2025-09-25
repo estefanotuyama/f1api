@@ -1,4 +1,3 @@
-from sqlalchemy.orm import exc
 from backend.models.driver import Driver
 from backend.models.session_driver import SessionDriver
 from backend.models.events import Event
@@ -37,13 +36,14 @@ def add_meetings_to_db(session: Session):
     """
     meetings = get_data(f'{URL_BASE}meetings')
 
+    existing_meetings_query = session.exec(select(Event.meeting_key))
+    existing_meetings = set(existing_meetings_query.all())
 
     for meeting in meetings:
 
-        existing = session.get(Event, meeting['meeting_key'])
-        if existing:
+        if meeting.get('meeting_key') in existing_meetings:
             logger.info(f"Meeting {str(meeting['meeting_key'])} already exists in DB, skipping.")
-            return
+            continue
 
         new_meeting = Event(
                     meeting_key=meeting.get('meeting_key'),
@@ -85,14 +85,28 @@ def add_drivers_and_session_links(session: Session, session_key: int, all_driver
     Adds drivers to the DB if they don't exist and links them to the session.
     This function NO LONGER fetches data, it just processes a list of driver data.
     """
+
+    acronyms_from_api = {
+        d['name_acronym'] for d in all_drivers_data if d.get('name_acronym')
+    }
+
+    existing_drivers_query = session.exec(
+        select(Driver).where(Driver.name_acronym.in_(acronyms_from_api))
+    )
+
+    acronym_driver_map = {driver.name_acronym: driver for driver in existing_drivers_query}
+
+    existing_links_query = session.exec(
+        select(SessionDriver.driver_id).where(SessionDriver.session_key == session_key)
+    )
+    existing_links_set = set(existing_links_query)
+                                   
     for driver_data in all_drivers_data:
         acronym = driver_data.get('name_acronym')
         if not acronym:
             continue
 
-        driver = session.exec(
-            select(Driver).where(Driver.name_acronym == acronym)
-        ).first()
+        driver = acronym_driver_map.get(acronym)
 
         if driver:
             made_update = False
@@ -124,14 +138,19 @@ def add_drivers_and_session_links(session: Session, session_key: int, all_driver
                 headshot_url=driver_data.get('headshot_url', "")
             )
             session.add(driver)
-            session.flush()
-            session.refresh(driver)
             logger.info(f"Staged new driver {acronym} for addition (with placeholders if needed).")
+            acronym_driver_map[acronym] = driver
+    session.flush()
+
+    for driver_data in all_drivers_data:
+        acronym = driver_data.get('name_acronym')
+        if not acronym:
+            continue
+        driver = acronym_driver_map.get(acronym)
         # save driver id for later
         driver_data['driver_id'] = driver.id
 
-        session_driver = session.get(SessionDriver, (session_key, driver.id))
-        if not session_driver:
+        if driver.id not in existing_links_set:
             new_session_driver = SessionDriver(
                 session_key=session_key,
                 driver_id=driver.id,
@@ -169,6 +188,14 @@ def add_all_laps_for_session(session: Session, session_key: int):
     # ensure all drivers and their session links are in the DB
     add_drivers_and_session_links(session, session_key, all_drivers_data)
 
+    # make one query to fetch all laps for that session to check existence
+    existing_driver_laps = session.exec(
+        select(SessionLaps.driver_id, SessionLaps.lap_number).where(
+            SessionLaps.session_key == session_key
+    ))
+
+    existing_laps = {(lap.driver_id, lap.lap_number) for lap in existing_driver_laps}
+
     for driver_data in all_drivers_data:
         driver_number = driver_data['driver_number']
         driver_id = driver_data['driver_id']
@@ -178,19 +205,13 @@ def add_all_laps_for_session(session: Session, session_key: int):
         driver_stints = stints_by_driver.get(driver_number, [])
 
         if not driver_laps:
-            continue 
+            continue
 
         stints_hashmap = map_stints_laps(driver_stints)
 
         for lap in driver_laps:
-            existing = session.exec(
-                select(SessionLaps).where(
-                    (SessionLaps.driver_id == driver_id) &
-                    (SessionLaps.session_key == lap['session_key']) &
-                    (SessionLaps.lap_number == lap['lap_number'])
-                )
-            ).first()
-            if existing:
+
+            if (driver_id, lap.get('lap_number')) in existing_laps:
                 continue
 
             compound = stints_hashmap.get(lap['lap_number'], FALLBACK_COMPOUND)
@@ -215,30 +236,31 @@ def add_session_result_to_db(session:Session, session_key:int):
     :return: returns early if exception.
     """
     data = get_data(URL_BASE + f'session_result?session_key={session_key}')
-    for datapoint in data:
-        session_driver_link = session.exec(
-            select(SessionDriver).where(
-                SessionDriver.session_key == session_key,
-                SessionDriver.driver_number == datapoint.get('driver_number')
-            )
-        ).first()
+    if not data:
+        return
 
-        if not session_driver_link:
+    session_drivers_query = session.exec(
+        select(SessionDriver).where(SessionDriver.session_key == session_key)
+    )
+    
+    driver_map = {sd.driver_number: sd.driver_id for sd in session_drivers_query}
+
+    existing_results_query = session.exec(
+        select(SessionResult.driver_id).where(SessionResult.session_key == session_key)
+    )
+    existing_results_set = set(existing_results_query)
+
+    for datapoint in data:
+        driver_number = datapoint.get('driver_number')
+
+        driver_id = driver_map.get(driver_number)
+
+        if not driver_id:
             logger.error(f"Could not find a SessionDriver link for driver number "
-                         f"{datapoint.get('driver_number')} in session {session_key}. Skipping result.")
+                         f"{driver_number} in session {session_key}. Skipping result.")
             continue
 
-        driver_id = session_driver_link.driver_id
-
-        existing = session.exec(
-            select(SessionResult).where(
-                (SessionResult.driver_id == driver_id) &
-                (SessionResult.session_key == datapoint['session_key'])
-            )
-        ).first()
-
-        if existing:
-            logger.info(f"Session result for driver {str(datapoint['driver_number'])} in session {str(session_key)} already exists, skipping.")
+        if driver_id in existing_results_set:
             continue
 
         sr_entry = SessionResult(
@@ -259,9 +281,13 @@ def add_session_result_to_db(session:Session, session_key:int):
 def add_teams_colors(session:Session):
     try: 
         teams = session.exec(select(distinct(SessionDriver.team)))
+        existing_teams_query = session.exec(select(Teams.name))
+        existing_teams = set(existing_teams_query)
 
         for team in teams:
             if not team:
+                continue
+            if team in existing_teams:
                 continue
             team_fmt = team.replace(' ', '%20')
             data = get_data(URL_BASE + f'drivers?team_name={team_fmt}')[0]
@@ -287,7 +313,7 @@ def update_db():
         latest_session_date = fetch_latest_session(session)
 
         if latest_session_date:
-            url = URL_BASE + f'sessions?date_start>{latest_session_date}'
+            url = URL_BASE + f'sessions?date_start>={latest_session_date}'
         # if this is the first time populating the script (no latest session in db), get all sessions
         else:
             url = URL_BASE + f'sessions'
