@@ -8,7 +8,7 @@ export const formatLapTime = (time: number) => {
 
 export const solveDriverStatus = (driver: DriverSessionResult) => {
 	if (driver.dnf) {
-		return `${driver.number_of_laps} (DNF)`
+		return "(DNF)"
 	}
 	else if (driver.dns) {
 		return "DNS"

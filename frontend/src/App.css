@@ -85,7 +85,7 @@ body {
 /* --- Main Grid Layout (IMPROVED: More space for drivers) --- */
 .drivers-results-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* Changed from 1fr 1fr to give more space to drivers */
+  grid-template-columns: 2fr 1.15fr; /* Changed from 1fr 1fr to give more space to drivers */
   gap: var(--space-xl);
   align-items: start;
   margin-bottom: var(--space-xl);
@@ -198,6 +198,7 @@ body {
   position: relative;
   overflow: hidden;
   gap: var(--space-md); /* Added gap between image and info */
+  -webkit-tap-highlight-color: transparent; /* avoid blue tap flash on iOS */
 }
 
 .driver-card:hover {
@@ -207,10 +208,29 @@ body {
   background-color: var(--color-accent-hover);
 }
 
+/* On touch devices, prevent sticky :hover after tap so cards return to normal */
+@media (pointer: coarse) {
+  .driver-card:hover {
+    border-color: transparent;
+    transform: none;
+    box-shadow: none;
+    background-color: var(--color-surface-2);
+  }
+}
+
 .driver-card.selected {
   border-color: var(--color-accent);
   background-color: var(--color-accent-selected);
   box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+/* Ensure card returns to base style when it holds focus after tap */
+.driver-card:focus,
+.driver-card:focus-visible {
+  outline: none;
+  background-color: var(--color-surface-2);
+  box-shadow: none;
+  border-color: transparent;
 }
 
 .driver-card.selected::before {
@@ -293,7 +313,7 @@ body {
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
 		Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 	/* MODIFICATION: Reduced base font size for a tighter look */
-	font-size: 0.9rem;
+	font-size: 0.85rem;
 }
 
 /* --- Table Header --- */
@@ -618,6 +638,7 @@ body {
   font-weight: 500;
   border: 1px solid;
   transition: var(--transition);
+  white-space: nowrap; /* prevent wrapping when (hidden) appears */
 }
 
 .outlier-badge.has-outliers {
@@ -713,16 +734,238 @@ body {
 
 @media (max-width: 480px) {
   .drivers-grid {
-    grid-template-columns: 1fr; /* Single column on very small screens */
+    grid-template-columns: repeat(2, 1fr); /* Keep 2 per row on phones */
+    gap: var(--space-sm);
   }
 
   .driver-card {
-    height: 65px; /* Even more compact for single column */
-    padding: var(--space-sm);
+    height: 80px; /* Fixed height for equal-sized cards */
+    padding: var(--space-xs);
+    gap: var(--space-sm);
   }
 
   .driver-image {
-    width: 35px; /* Smaller images on mobile */
-    height: 35px;
+    width: 38px; /* Slightly larger for better recognition */
+    height: 38px;
+  }
+
+  .driver-info h3 {
+    font-size: 0.76rem; /* Slightly smaller to save vertical space */
+    line-height: 1.15;
+    display: -webkit-box; /* enable multiline clamp */
+    -webkit-line-clamp: 2; /* show up to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden; /* clip overflow beyond 2 lines */
+    white-space: normal; /* allow wrapping */
+  }
+
+  .driver-number {
+    display: none !important; /* Hide number on mobile */
+  }
+
+  .driver-team {
+    font-size: 0.7rem !important;
+    white-space: nowrap; /* Prevent wrapping to keep heights equal */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Outlier controls: compact stacked layout on phones */
+  .outlier-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+  }
+
+  .outlier-controls-left {
+    gap: var(--space-sm);
+  }
+
+  .outlier-toggle-label {
+    font-size: 0.8rem; /* smaller label on phones */
+    line-height: 1.2; /* keep height stable while toggling */
+  }
+
+  .toggle-switch {
+    width: 48px; /* wider track for easier tap */
+    height: 26px;
+    border-radius: 13px;
+  }
+
+  .toggle-switch-knob {
+    width: 20px; /* wider knob on phones */
+    height: 20px;
+  }
+
+  .toggle-switch-knob.active {
+    left: auto; /* prevent overflow on the right */
+    right: 2px; /* snap to inside-right */
+  }
+
+  .toggle-switch-knob.inactive {
+    left: 2px; /* snap to inside-left */
+    right: auto;
+  }
+
+  .outlier-badge {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 16px;
+  }
+
+  .outlier-threshold-info {
+    font-size: 0.7rem;
+  }
+
+  /* Hide the optional '(hidden)' suffix on mobile to avoid width changes */
+  .outlier-badge-hidden {
+    display: none !important;
+  }
+
+  /* Results table: compact layout to avoid horizontal scroll */
+  .results-table-container {
+    overflow-x: visible;
+  }
+
+  .results-table {
+    font-size: 0.8rem;
+    table-layout: fixed; /* Only apply fixed layout on mobile */
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 8px var(--space-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Column widths: Pos | Driver | Gap | Laps (hide Team) */
+  .results-table th:first-child,
+  .results-table td:first-child {
+    width: 44px; /* Ensure header shows 'Pos' fully */
+  }
+
+  .results-table th:nth-child(2),
+  .results-table td:nth-child(2) {
+    width: auto;
+  }
+
+  .results-table th:nth-child(3),
+  .results-table td:nth-child(3) {
+    display: none; /* hide Team column */
+  }
+
+  .results-table th:nth-child(4),
+  .results-table td:nth-child(4) {
+    width: 88px; /* More room so gap is not ellipsized */
+    text-align: right;
+  }
+
+  .results-table th:nth-child(5),
+  .results-table td:nth-child(5) {
+    width: 56px;
+    text-align: right;
+  }
+}
+
+@media (max-width: 360px) {
+  .drivers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .driver-card {
+    height: 68px; /* Fixed height for equal-sized cards */
+  }
+
+  .driver-image {
+    width: 34px;
+    height: 34px;
+  }
+
+  .driver-info h3 {
+    font-size: 0.74rem; /* Slightly larger but constrained to one line */
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .driver-number {
+    display: none !important; /* Hide number on tiny phones */
+  }
+
+  .driver-team {
+    font-size: 0.65rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Extra-tight layout on very small phones */
+  .outlier-controls {
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-xs);
+  }
+
+  .outlier-toggle-label {
+    font-size: 0.78rem; /* smaller label on tiny phones */
+    line-height: 1.2;
+  }
+
+  .toggle-switch {
+    width: 42px;
+    height: 24px;
+  }
+
+  .toggle-switch-knob {
+    width: 18px; /* wider knob on tiny phones */
+    height: 18px;
+  }
+
+  .toggle-switch-knob.active {
+    left: auto;
+    right: 2px;
+  }
+
+  .toggle-switch-knob.inactive {
+    left: 2px;
+    right: auto;
+  }
+
+  .outlier-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 14px;
+  }
+
+  .outlier-threshold-info {
+    font-size: 0.68rem;
+  }
+
+  /* Further tighten table on very small phones */
+  .results-table {
+    font-size: 0.75rem;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 6px var(--space-xs);
+  }
+
+  .results-table th:first-child,
+  .results-table td:first-child {
+    width: 38px; /* keep 'Pos' visible on tiny phones */
+  }
+
+  .results-table th:nth-child(4),
+  .results-table td:nth-child(4) {
+    width: 78px; /* extra space for gap */
+  }
+
+  .results-table th:nth-child(5),
+  .results-table td:nth-child(5) {
+    width: 52px;
   }
 }

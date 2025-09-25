@@ -312,9 +312,12 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error, team
 			? [Math.ceil(maxTime + PAD), Math.max(0, Math.floor(minTime - PAD))]
 			: ["auto", "auto"]
 
-		// Chart size logic (horizontal scrolling) - use displayData for sizing
-		const POINT_SPACING = 60
-		const innerWidth = Math.max(POINT_SPACING * displayData.length, Math.floor(containerWidth * 0.8))
+		// Chart size logic (horizontal scrolling) - responsive to viewport
+		const isMobile = containerWidth <= 768
+		const isSmallPhone = containerWidth <= 360
+		const POINT_SPACING = isSmallPhone ? 28 : isMobile ? 36 : 60
+		const baseFill = isMobile ? 0.9 : 0.8
+		const innerWidth = Math.max(POINT_SPACING * displayData.length, Math.floor(containerWidth * baseFill))
 		const MAX_WIDTH = 4000
 		const chartInnerWidth = Math.min(innerWidth, MAX_WIDTH)
 
@@ -338,7 +341,13 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error, team
 							{outlierCount > 0
 								? `${outlierCount} outlier${outlierCount > 1 ? "s" : ""} detected`
 								: "No outliers detected"}
-							{excludeOutliers && outlierCount > 0 && " (hidden)"}
+							<span
+								className="outlier-badge-hidden"
+								aria-hidden="true"
+								style={{ visibility: excludeOutliers && outlierCount > 0 ? "visible" : "hidden" }}
+							>
+								 (hidden)
+							</span>
 						</div>
 					</div>
 
@@ -349,7 +358,7 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error, team
 				<p className="chart-note">
 					{excludeOutliers
 						? `Showing ${displayData.length} laps with outliers hidden. Scale optimized for regular lap times.`
-						: `Showing all ${chartData.length} laps. Outliers appear as faded circles.`}{" "}
+						: `Showing all ${chartData.length} laps.`}{" "}
 					Scroll horizontally to view all data.
 				</p>
 
@@ -364,11 +373,11 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error, team
 							display: "block",
 						}}
 					>
-						<LineChart
-							width={chartInnerWidth}
-							height={460}
+							<LineChart
+								width={chartInnerWidth}
+								height={isSmallPhone ? 260 : isMobile ? 300 : 460}
 							data={displayData}
-							margin={{ top: 20, right: 30, left: 40, bottom: 20 }}
+								margin={{ top: isMobile ? 12 : 20, right: isMobile ? 20 : 30, left: isMobile ? 32 : 40, bottom: isMobile ? 12 : 20 }}
 						>
 							<CartesianGrid strokeDasharray="3 3" strokeOpacity={0.15} />
 
