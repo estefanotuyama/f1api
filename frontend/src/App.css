@@ -3,14 +3,20 @@
    ========================================================================== */
 :root {
   /* Color Palette */
-  --color-background: #1d1f22; /* Main background replaced */
-  --color-surface-1: #2a2c30; /* Slightly lighter than background, for panels/cards */
-  --color-surface-2: #3a3c40; /* For inputs, table headers, secondary surfaces */
-  --color-border: #555; /* Borders stand out against dark background */
-  --color-text-primary: #ffffff; /* Main text */
-  --color-text-secondary: #cccccc; /* Secondary text */
-  --color-accent: #ff6b35; /* Modern orange-red accent */
-  --color-danger: #ff4444; /* Danger / error states */
+--color-background:      #101010;
+--color-surface-1:       #181818;
+--color-surface-2:       #242424;
+--color-border:          #333333;
+--color-text-primary:    #F0F0F0;
+--color-text-secondary:  #A0A0A0;
+
+--color-accent:          #18d4f6;
+--color-accent-rgba:     rgba(24,212,246,1);
+--color-accent-hover:    rgba(24,212,246,0.1);
+--color-accent-selected: rgba(24,212,246,0.2);
+--color-accent-outlier:  rgba(24,212,246,0.25);
+
+  --color-danger:#ff5c5c;
 
   /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
@@ -188,7 +194,7 @@ body {
   flex-direction: row;
   align-items: center;
   text-align: left;
-  height: 90px; /* Reduced height significantly for horizontal layout */
+  height: 95px; /* Reduced height significantly for horizontal layout */
   position: relative;
   overflow: hidden;
   gap: var(--space-md); /* Added gap between image and info */
@@ -198,12 +204,12 @@ body {
   border-color: var(--color-accent);
   transform: translateY(-2px); /* Reduced hover lift from 4px to 2px */
   box-shadow: var(--shadow-md);
-  background-color: rgba(255, 107, 53, 0.05);
+  background-color: var(--color-accent-hover);
 }
 
 .driver-card.selected {
   border-color: var(--color-accent);
-  background-color: rgba(255, 107, 53, 0.15);
+  background-color: var(--color-accent-selected);
   box-shadow: 0 0 0 1px var(--color-accent);
 }
 
@@ -272,51 +278,99 @@ body {
   text-overflow: ellipsis;
 }
 
-/* --- Results Section --- */
+
 .results-table-container {
-  /* Add any specific styling for your results table here */
-  overflow-x: auto;
+	overflow-x: auto;
+	padding: 2px; /* Small padding to prevent box-shadow clipping */
 }
 
-.data-table-container {
-  width: 100%;
-  max-height: 615px;
-  overflow-y: auto;
+.results-table {
+	width: 100%;
+	border-collapse: collapse;
+	background-color: var(--color-surface-1);
+	border-radius: var(--border-radius);
+	overflow: hidden;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+		Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+	/* MODIFICATION: Reduced base font size for a tighter look */
+	font-size: 0.9rem;
 }
 
-/* --- Data Table (for Laps and Results) --- */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--color-surface-1);
-  border-radius: var(--border-radius);
-  overflow: hidden;
+/* --- Table Header --- */
+.results-table th {
+	/* MODIFICATION: Reduced padding to make header less thick */
+	padding: 10px var(--space-md);
+	font-weight: 700;
+	/* MODIFICATION: Slightly smaller font size for the header */
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	color: var(--color-text-secondary);
+	letter-spacing: 0.5px;
+	text-align: left;
+	border-bottom: 1px solid var(--color-border);
+	background-color: var(--color-surface-2);
 }
 
-.data-table th,
-.data-table td {
-  padding: var(--space-md);
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
+/* --- Table Body & Rows --- */
+.results-table tbody tr {
+	border-bottom: 1px solid var(--color-border);
+	transition: background-color 0.2s ease-in-out;
 }
 
-.data-table th {
-  background-color: var(--color-surface-2);
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
-  position: sticky;
-  top: 0;
-  z-index: 1;
+.results-table tbody tr:last-child {
+	border-bottom: none;
 }
 
-.data-table tbody tr:hover {
-  background-color: rgba(255, 107, 53, 0.05);
+.results-table tbody tr:hover {
+	background-color: var(--color-accent-hover);
 }
 
-.data-table tbody tr:last-child td {
-  border-bottom: none;
+.results-table td {
+	/* MODIFICATION: Adjusted padding for better balance with new font size */
+	padding: 14px var(--space-md);
+	color: var(--color-text-primary);
+	vertical-align: middle;
+}
+
+/* --- Column Specific Alignment & Styling --- */
+
+/* Position Column (1st child) */
+.results-table td:first-child {
+	font-weight: 700;
+	color: var(--color-text-primary);
+	text-align: center;
+	/* MODIFICATION: Removed padding-left and position relative */
+}
+
+/* NEW: Driver Name Column (2nd child) */
+.results-table td:nth-child(2) {
+	font-weight: 600;
+	white-space: nowrap; /* Ensures driver names stay on one line */
+}
+
+/* NEW: Team Name Column (3rd child) */
+.results-table td:nth-child(3) {
+	color: var(--color-text-secondary); /* De-emphasize team name */
+}
+
+/* REMOVED: F1-style Position Indicator pseudo-element */
+
+/* Gap & Laps Columns (4th and 5th child) */
+.results-table th:nth-child(4),
+.results-table td:nth-child(4),
+.results-table th:nth-child(5),
+.results-table td:nth-child(5) {
+	text-align: left;
+	font-feature-settings: "tnum"; /* Monospaced numbers */
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+/* --- Highlighting for Top Positions --- */
+
+/* P1: Leader of the session */
+.results-table tbody tr:first-child td:first-child {
+	color: var(--color-accent);
 }
 
 /* --- Loading and Error States --- */
@@ -524,7 +578,7 @@ body {
 
 .toggle-switch.active {
   background-color: var(--color-accent);
-  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+  box-shadow: 0 0 0 2px var(--color-accent-outlier);
 }
 
 .toggle-switch.inactive {
@@ -567,9 +621,9 @@ body {
 }
 
 .outlier-badge.has-outliers {
-  background-color: rgba(255, 107, 53, 0.1);
+  background-color: var(--color-accent-outlier);
   color: var(--color-accent);
-  border-color: rgba(255, 107, 53, 0.3);
+  border-color: var(--color-accent-outlier);
 }
 
 .outlier-badge.no-outliers {

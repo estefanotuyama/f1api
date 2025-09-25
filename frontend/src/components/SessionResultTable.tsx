@@ -22,13 +22,13 @@ export const SessionResultTable = ({ sessionResult, loading, error }: SessionRes
 
 	return (
 		<div className="results-table-container">
-			<table className="data-table">
+			<table className="results-table">
 				<thead>
 					<tr>
 						<th>Pos</th>
 						<th>Driver</th>
 						<th>Team</th>
-						<th>Gap to leader</th>
+						<th>Gap</th>
 						<th>Laps</th>
 					</tr>
 				</thead>
@@ -36,7 +36,7 @@ export const SessionResultTable = ({ sessionResult, loading, error }: SessionRes
 					{sessionResult.result.map((driver) => (
 						<tr key={driver.position}>
 							<td>{driver.position}</td>
-							<td>{`${driver.first_name} ${driver.last_name}`}</td>
+							<td>{`${driver.last_name}`}</td>
 							<td>{driver.team}</td>
 							<td>{formatTime(driver)}</td>
 							<td>{solveDriverStatus(driver)}</td>
