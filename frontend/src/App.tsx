@@ -33,10 +33,15 @@ function App() {
 		<div className="app">
 
 			<header className="app-header">
-				<img className="logo" src="/f1dataxplorerlogo-side.png" />
+				<div className="logo">
+					<img src="/racepace-logo.png" />
+					<p>Compare F1 driver lap times and analyze data</p>
+				</div>
 			</header>
 
+
 			<main className="main-content">
+
 				{/* Dropdown Controls */}
 				<Controls
 					years={years}
@@ -53,11 +58,13 @@ function App() {
 				/>
 				<div className="drivers-results-grid">
 					<div>
+
 						{selectedSession && (
 							<div className="panel">
 								<h2 className="panel-header">
 									Drivers in {selectedEvent?.circuit_name}, {selectedEvent?.country_name} {selectedYear}{" "}
 									{selectedSession.session_name}
+									<p>Select drivers to view and compare lap times</p>
 								</h2>
 								{loading.drivers && <div className="loading">Loading drivers...</div>}
 								{errors.drivers && <div className="error">{errors.drivers}</div>}

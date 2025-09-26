@@ -15,12 +15,14 @@
 --color-accent-hover:    rgba(24,212,246,0.1);
 --color-accent-selected: rgba(24,212,246,0.2);
 --color-accent-outlier:  rgba(24,212,246,0.25);
+--logo-h: 45px;       /* logo image height (try 36px..48px) */
+--title-size: 1.3rem;
 
-  --color-danger:#ff5c5c;
+--color-danger:#ff5c5c;
 
   /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
-    "Droid Sans", "Helvetica Neue", sans-serif;
+    "Droid Sans", "Helvetica Neue", "Orbitron", sans-serif;
 
   /* Spacing Scale (makes all margins/padding consistent) */
   --space-xs: 0.25rem; /* 4px */
@@ -56,12 +58,38 @@ body {
 /* ==========================================================================
    3. App Layout
    ========================================================================== */
+
+/* Container */
 .logo {
-  height: 100px;
-  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* <-- top-align children */
+  padding: 6px 0;
 }
 
+/* Logo image */
+.logo img {
+  display: block;          /* removes baseline gap */
+  height: var(--logo-h);
+  width: auto;
+  flex: 0 0 auto;
+  /* optional: add a little top offset if you need pixel-perfect tweak */
+  /* transform: translateY(1px); */
+}
+
+/* Description: smaller and constrained width */
+.logo p {
+  margin: 0;
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  max-width: 48ch;         /* keep readable line length */
+  word-break: break-word;
+}
+
+
 .app-header {
+  height: 80px;
   background-color: var(--color-surface-1);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
@@ -69,11 +97,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.app-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
 }
 
 .main-content {
@@ -120,16 +143,23 @@ body {
 
 .panel-header {
   color: var(--color-text-primary);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
   font-size: 1.3rem;
   font-weight: 600;
   line-height: 1.3;
+}
+
+.panel-header p {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 400;
 }
 
 /* --- Controls / Dropdowns --- */
 .controls {
   display: flex;
   gap: var(--space-xl);
+  margin-top: 20px;
   margin-bottom: var(--space-xxl);
   flex-wrap: wrap;
 }
@@ -733,6 +763,19 @@ body {
 }
 
 @media (max-width: 480px) {
+
+.app-header{
+  height: 65px;
+}
+
+.logo img{
+  height: 35px;
+}
+
+.logo p {
+  font-size: 0.4rem;
+}
+
   .drivers-grid {
     grid-template-columns: repeat(2, 1fr); /* Keep 2 per row on phones */
     gap: var(--space-sm);

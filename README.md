@@ -1,10 +1,10 @@
-# 🏎️ F1 Stats API v0.6
+# 🏎️ RacePace web-app v0.7
 
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/fastapi-0.110-green)
 
 
-A FastAPI backend for exploring Formula 1 driver data, sessions, lap times, and results—using OpenF1 data.
+A web application for exploring Formula 1 driver data, sessions, lap times, and results — using OpenF1 data.
 
 -----
 
@@ -12,7 +12,7 @@ A FastAPI backend for exploring Formula 1 driver data, sessions, lap times, and 
 
   - ✅ Track F1 events by year and location
   - ✅ View session info (FP1, FP2, Qualifying, Race, etc.)
-  - ✅ Explore driver participation and lap times
+  - ✅ Explore driver participation and compare lap times
   - ✅ Clean, modular FastAPI backend using SQLModel
   - ✅ PostgreSQL database
   - ✅ Frontend in React
@@ -119,9 +119,10 @@ Now, you can access the application at http://localhost:3000
 
   - [x] Add driver, session, and lap time API routes (in progress)
   - [x] Write tests using `pytest`
-  - [x] Add simple Front-End
+  - [x] Add Front-End
   - [x] Add session stats feature
   - [x] Convert to PostgreSQL
+  - [x] Add lap time comparison feature
   - [ ] Deploy to a cloud service
 
 -----

@@ -91,7 +91,7 @@ export const useF1Data = () => {
 			if (!response.ok) throw new Error("Failed to fetch events")
 
 			const data = await response.json()
-			if (data.length === 0) {
+			if (data.length === 0 && year) {
 				setErrors((prev) => ({ ...prev, events: "No events available for this year" }))
 			}
 			setEvents(data)
