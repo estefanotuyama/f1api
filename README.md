@@ -49,8 +49,8 @@ F1Project/
 ### 1\. Clone the Repo
 
 ```bash
-git clone git@github.com:estefanotuyama/f1api.git
-cd f1api
+git clone git@github.com:estefanotuyama/racepace-web.git
+cd racepaceweb
 ```
 
 ### 2\. Create a Virtual Environment
@@ -65,7 +65,7 @@ source venv/bin/activate  # On macOS/Linux
 ### 3\. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -r dev-requirements.txt
 ```
 
 ### 4\. Configure the Database

@@ -15,8 +15,6 @@ app.include_router(sessions.router)
 app.include_router(drivers.router)
 app.include_router(laps.router)
 
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # frontend dev server

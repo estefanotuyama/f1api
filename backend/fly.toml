@@ -1,0 +1,23 @@
+# fly.toml app configuration file generated for racepace-backend on 2025-09-27T09:33:40-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'racepace-backend'
+primary_region = 'fra'
+
+[build]
+
+[processes]
+  app = 'uvicorn backend.main:app --host 0.0.0.0 --port 8080'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  size = 'shared-cpu-1x'
