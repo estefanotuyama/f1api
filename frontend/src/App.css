@@ -10,13 +10,11 @@
 --color-text-primary:    #F0F0F0;
 --color-text-secondary:  #A0A0A0;
 
---color-accent:          #18d4f6;
---color-accent-rgba:     rgba(24,212,246,1);
---color-accent-hover:    rgba(24,212,246,0.1);
---color-accent-selected: rgba(24,212,246,0.2);
---color-accent-outlier:  rgba(24,212,246,0.25);
---logo-h: 45px;       /* logo image height (try 36px..48px) */
---title-size: 1.3rem;
+--color-accent:          #FF3B5B;
+--color-accent-rgba:     rgba(255,59,91,1);
+--color-accent-hover:    rgba(255,59,91,0.1);
+--color-accent-selected: rgba(255,59,91,0.2);
+--color-accent-outlier:  rgba(255,59,91,0.25);
 
 --color-danger:#ff5c5c;
 
@@ -48,11 +46,23 @@
   box-sizing: border-box;
 }
 
+/* Make the root elements full height */
+html, body, #root {
+  height: 100%;
+}
+
 body {
   font-family: var(--font-family);
   background-color: var(--color-background);
   color: var(--color-text-primary);
-  min-height: 100vh;
+  /* You can remove min-height: 100vh; since height:100% is enough */
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+
 }
 
 /* ==========================================================================
@@ -60,36 +70,18 @@ body {
    ========================================================================== */
 
 /* Container */
-.logo {
+.logo-container {
   display: flex;
-  flex-direction: column;
-  align-items: center; /* <-- top-align children */
-  padding: 6px 0;
 }
 
-/* Logo image */
-.logo img {
-  display: block;          /* removes baseline gap */
-  height: var(--logo-h);
+.logo{
+  height:100px;
   width: auto;
-  flex: 0 0 auto;
-  /* optional: add a little top offset if you need pixel-perfect tweak */
-  /* transform: translateY(1px); */
-}
-
-/* Description: smaller and constrained width */
-.logo p {
-  margin: 0;
-  font-size: 0.6rem;
-  font-weight: 400;
-  color: var(--color-text-secondary);
-  max-width: 48ch;         /* keep readable line length */
-  word-break: break-word;
 }
 
 
 .app-header {
-  height: 80px;
+  height: 70px;
   background-color: var(--color-surface-1);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
@@ -100,9 +92,33 @@ body {
 }
 
 .main-content {
+  flex: 1;
   padding: var(--space-xl);
+  width: 100%;
   max-width: 1800px;
   margin: 0 auto;
+}
+
+.app-footer{
+  height: 50px;
+  background-color: var(--color-surface-1);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-footer div{
+  padding: var(--space-md);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.app-footer p {
+  color: var(--color-text-secondary);
+  font-size: 12px;
 }
 
 /* --- Main Grid Layout (IMPROVED: More space for drivers) --- */
@@ -426,6 +442,7 @@ body {
 /* --- Loading and Error States --- */
 .loading,
 .error {
+  margin-top: var(--space-md);
   padding: var(--space-xl);
   text-align: center;
   border-radius: var(--border-radius);
@@ -526,6 +543,10 @@ body {
     flex-direction: column;
     gap: var(--space-md);
   }
+
+  .app-footer div {
+    max-width: 80%;
+}
 }
 
 /* === Layout fixes to keep chart contained and prevent parent expansion === */
@@ -768,12 +789,8 @@ body {
   height: 65px;
 }
 
-.logo img{
-  height: 35px;
-}
-
-.logo p {
-  font-size: 0.4rem;
+ .app-footer p{
+  font-size:9px;
 }
 
   .drivers-grid {
@@ -782,7 +799,7 @@ body {
   }
 
   .driver-card {
-    height: 80px; /* Fixed height for equal-sized cards */
+    height: 65px; /* Fixed height for equal-sized cards */
     padding: var(--space-xs);
     gap: var(--space-sm);
   }
@@ -817,7 +834,7 @@ body {
   .outlier-controls {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
     padding: var(--space-md);
   }
 
@@ -831,8 +848,8 @@ body {
   }
 
   .toggle-switch {
-    width: 48px; /* wider track for easier tap */
-    height: 26px;
+    width: 60px; /* wider track for easier tap */
+    height: 25px;
     border-radius: 13px;
   }
 

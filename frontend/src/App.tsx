@@ -1,4 +1,3 @@
-
 "use client"
 
 import "./App.css"
@@ -7,6 +6,9 @@ import { Controls } from "./components/Controls"
 import { SessionResultTable } from "./components/SessionResultTable"
 import { useF1Data } from "./hooks/useF1Data"
 import { LapTimeChart } from "./components/LapTimeChart"
+import { ReactComponent as Logo } from "./racepace-logo.svg"
+import { Toaster } from "react-hot-toast"
+import WelcomeMessage from "./components/WelcomeMessage"
 
 function App() {
 	const {
@@ -31,11 +33,12 @@ function App() {
 
 	return (
 		<div className="app">
+			<Toaster />
+			<WelcomeMessage />
 
 			<header className="app-header">
-				<div className="logo">
-					<img src="/racepace-logo.png" />
-					<p>Compare F1 driver lap times and analyze data</p>
+				<div className="logo-container">
+					<Logo className="logo" />
 				</div>
 			</header>
 
@@ -107,6 +110,13 @@ function App() {
 					)}
 				</div>
 			</main>
+			<footer className="app-footer">
+				<div>
+					<p>
+						RacePace is an unofficial fan project and is not associated in any way with the Formula 1 companies. All F1 related marks are trade marks of Formula One Licensing B.V.
+					</p>
+				</div>
+			</footer>
 		</div>
 	)
 }

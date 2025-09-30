@@ -50,7 +50,7 @@ F1Project/
 
 ```bash
 git clone git@github.com:estefanotuyama/racepace-web.git
-cd racepaceweb
+cd racepace-web
 ```
 
 ### 2\. Create a Virtual Environment
@@ -89,6 +89,7 @@ The project pulls data from the OpenF1 API. To create the database tables and po
 ```bash
 python -m backend.db.update_db
 ```
+May take up to 20 minutes.
 
 ### 6\. 🧪 Run the API Server
 
@@ -103,7 +104,15 @@ Now, you can access the API documentation:
   - **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
   - **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
-### 7\. Install Frontend dependencies and start frontend server
+### 7\. Add frontend .env
+
+Add a .env in the frontend directory and point the frontend to the API:
+
+```
+REACT_APP_API_URL=http://localhost:8000
+```
+
+### 8\. Install Frontend dependencies and start frontend server
 
 ```bash
 cd ./frontend
@@ -123,7 +132,7 @@ Now, you can access the application at http://localhost:3000
   - [x] Add session stats feature
   - [x] Convert to PostgreSQL
   - [x] Add lap time comparison feature
-  - [ ] Deploy to a cloud service
+  - [ ] Deploy to a cloud service (frontend deployed in [Vercel](https://f1racepace.vercel.app))
 
 -----
 
