@@ -2,9 +2,11 @@
 
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/fastapi-0.110-green)
-
+![React](https://img.shields.io/badge/react-18.3-blue)
 
 A web application for exploring Formula 1 driver data, sessions, lap times, and results — using OpenF1 data.
+
+Application is live on [https://f1racepace.vercel.app](https://f1racepace.vercel.app)
 
 -----
 
@@ -132,8 +134,9 @@ Now, you can access the application at http://localhost:3000
   - [x] Add session stats feature
   - [x] Convert to PostgreSQL
   - [x] Add lap time comparison feature
-  - [ ] Deploy to a cloud service (frontend deployed in [Vercel](https://f1racepace.vercel.app))
+  - [x] Deploy to a cloud service (frontend deployed in Vercel, backend on Hetzner)
 
+Future goal is to add a live data module so users can view and compare driver data from live races.
 -----
 
 ## 👨‍💻 Author
