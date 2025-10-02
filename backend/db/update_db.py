@@ -6,24 +6,26 @@ from backend.db.db_utils import URL_BASE, get_data, logger, map_stints_laps, FAL
 from backend.models.session_laps import SessionLaps
 from backend.models.session_result import SessionResult
 from backend.models.sessions import F1Session
-from sqlalchemy import select
-from sqlmodel import Session, distinct, select, desc
-from collections import defaultdict
-
 from backend.models.teams import Teams
+
+from sqlalchemy import select, exists
+from sqlmodel import Session, distinct, select, desc
+from sqlalchemy.dialects.postgresql import insert
+from collections import defaultdict
+from sqlalchemy import bindparam, text
 
 """
 This is the script that updates the database.
 """
 
-def fetch_latest_session(session: Session) -> str:
+def fetch_latest_session(session: Session) -> F1Session | None:
     """
     Queries the database to find the latest session we have a record of.
     :param session: Database session
     :return: Latest 'F1Session' session
     """
     result = session.exec(
-        select(F1Session.date).order_by(desc(F1Session.date))
+        select(F1Session).order_by(desc(F1Session.date))
     ).first()
     return result
 
@@ -57,6 +59,32 @@ def add_meetings_to_db(session: Session):
 
         session.add(new_meeting)
         logger.info(f"Staged meeting {str(meeting['meeting_key'])} for addition.")
+
+def add_current_meeting(session, meeting_key):
+    existing = session.get(Event, meeting_key)
+
+    if existing:
+        return
+
+    meeting = get_data(f'{URL_BASE}meetings?meeting_key={meeting_key}')[0]
+
+    if not meeting:
+        logger.warning(f"No meeting data for meeting_key={meeting_key}")
+        return
+
+    new_meeting = Event(
+                    meeting_key=meeting.get('meeting_key'),
+                    circuit_key=meeting.get('circuit_key'),
+                    location=meeting.get('location'),
+                    country_name=meeting.get('country_name'),
+                    circuit_name=meeting.get('circuit_short_name'),
+                    meeting_official_name=meeting.get('meeting_official_name'),
+                    year=meeting.get('year')
+                    )
+
+    session.add(new_meeting)
+    session.flush()
+
 
 def add_session_to_db(session:Session, f1session: dict):
     """
@@ -162,71 +190,118 @@ def add_drivers_and_session_links(session: Session, session_key: int, all_driver
 
 def add_all_laps_for_session(session: Session, session_key: int):
     """
-    Efficiently fetches and adds all laps for all drivers in a session.
+    Fetch lap/stint/driver data, ensure drivers are linked, then batch upsert laps.
+    Assumes the caller manages transactions (e.g. with session.begin()).
     """
     logger.info(f"Starting bulk lap/stint processing for session {session_key}.")
 
-    # bulk fetch all lap and stint data for a session
-    laps_url = URL_BASE + f'laps?session_key={str(session_key)}'
-    all_laps_data = get_data(laps_url)
+    # fetch remote data
+    laps_url = URL_BASE + f'laps?session_key={session_key}'
+    all_laps_data = get_data(laps_url) or []
 
-    stints_url = URL_BASE + f"stints?session_key={str(session_key)}"
-    all_stints_data = get_data(stints_url)
+    stints_url = URL_BASE + f"stints?session_key={session_key}"
+    all_stints_data = get_data(stints_url) or []
 
-    # group data for ease of access
+    drivers_url = URL_BASE + f"drivers?session_key={session_key}"
+    all_drivers_data = get_data(drivers_url) or []
+
+    # group by driver_number for quick lookup
     laps_by_driver = defaultdict(list)
     for lap in all_laps_data:
-        laps_by_driver[lap['driver_number']].append(lap)
+        dn = lap.get('driver_number')
+        if dn is None:
+            continue
+        laps_by_driver[dn].append(lap)
 
     stints_by_driver = defaultdict(list)
     for stint in all_stints_data:
-        stints_by_driver[stint['driver_number']].append(stint)
+        dn = stint.get('driver_number')
+        if dn is None:
+            continue
+        stints_by_driver[dn].append(stint)
 
-    drivers_url = URL_BASE + f"drivers?session_key={str(session_key)}"
-    all_drivers_data = get_data(drivers_url)
-
-    # ensure all drivers and their session links are in the DB
+    # ensure drivers/session links exist
     add_drivers_and_session_links(session, session_key, all_drivers_data)
 
-    # make one query to fetch all laps for that session to check existence
-    existing_driver_laps = session.exec(
+    # fetch existing laps for this session that already have a compound
+    rows = session.exec(
         select(SessionLaps.driver_id, SessionLaps.lap_number).where(
-            SessionLaps.session_key == session_key
-    ))
+            (SessionLaps.session_key == session_key) & (SessionLaps.compound != None)
+        )
+    ).all()
+    existing_laps = {(r[0], r[1]) for r in rows} if rows else set()
 
-    existing_laps = {(lap.driver_id, lap.lap_number) for lap in existing_driver_laps}
+    # collect the parameter dicts we want to upsert
+    values_to_upsert: list[dict] = []
 
     for driver_data in all_drivers_data:
-        driver_number = driver_data['driver_number']
-        driver_id = driver_data['driver_id']
+        driver_number = driver_data.get('driver_number')
+        driver_id = driver_data.get('driver_id')
 
-        # get laps and stints for this driver from our in-memory groups
+        if driver_number is None or driver_id is None:
+            continue
+
         driver_laps = laps_by_driver.get(driver_number, [])
-        driver_stints = stints_by_driver.get(driver_number, [])
-
         if not driver_laps:
             continue
 
-        stints_hashmap = map_stints_laps(driver_stints)
+        stints_hashmap = map_stints_laps(stints_by_driver.get(driver_number, []))
 
         for lap in driver_laps:
-
-            if (driver_id, lap.get('lap_number')) in existing_laps:
+            lap_num = lap.get('lap_number')
+            if lap_num is None:
                 continue
 
-            compound = stints_hashmap.get(lap['lap_number'], FALLBACK_COMPOUND)
+            if (driver_id, lap_num) in existing_laps:
+                continue
 
-            new_lap = SessionLaps(
-                driver_id=driver_id,
-                session_key=lap.get('session_key'),
-                lap_number=lap.get('lap_number'),
-                is_pit_out_lap=lap.get('is_pit_out_lap'),
-                lap_time=lap.get('lap_duration', 0.0),
-                st_speed=lap.get('st_speed', 0),
-                compound=compound
-            )
-            session.add(new_lap)
-    logger.info(f"Staged all laps for session {session_key}.")
+            compound = stints_hashmap.get(lap_num, None)
+
+            values_to_upsert.append({
+                'driver_id': driver_id,
+                'session_key': lap.get('session_key'),
+                'lap_number': lap_num,
+                'is_pit_out_lap': lap.get('is_pit_out_lap'),
+                'lap_time': lap.get('lap_duration', 0.0),
+                'st_speed': lap.get('st_speed', 0),
+                'compound': compound,
+            })
+
+    if not values_to_upsert:
+        logger.info(f"No new laps to upsert for session {session_key}.")
+        return
+
+    stmt = insert(SessionLaps).values(
+        driver_id=bindparam('driver_id'),
+        session_key=bindparam('session_key'),
+        lap_number=bindparam('lap_number'),
+        is_pit_out_lap=bindparam('is_pit_out_lap'),
+        lap_time=bindparam('lap_time'),
+        st_speed=bindparam('st_speed'),
+        compound=bindparam('compound'),
+    )
+
+    where_clause_expr = (
+        SessionLaps.compound.is_distinct_from(stmt.excluded.compound)
+        | SessionLaps.lap_time.is_distinct_from(stmt.excluded.lap_time)
+        | SessionLaps.st_speed.is_distinct_from(stmt.excluded.st_speed)
+        | SessionLaps.is_pit_out_lap.is_distinct_from(stmt.excluded.is_pit_out_lap)
+    )
+
+    do_update = stmt.on_conflict_do_update(
+        index_elements=['driver_id', 'session_key', 'lap_number'],
+        set_={
+            'is_pit_out_lap': stmt.excluded.is_pit_out_lap,
+            'lap_time': stmt.excluded.lap_time,
+            'st_speed': stmt.excluded.st_speed,
+            'compound': stmt.excluded.compound,
+        },
+        where=where_clause_expr
+    )
+
+    session.execute(do_update, values_to_upsert)
+
+    logger.info(f"Upserted {len(values_to_upsert)} laps for session {session_key}.")
 
 def add_session_result_to_db(session:Session, session_key:int):
     """
@@ -278,7 +353,7 @@ def add_session_result_to_db(session:Session, session_key:int):
         session.add(sr_entry)
     logger.info(f"Staged session results of session {str(session_key)} for addition.")
 
-def add_teams_colors(session:Session):
+def add_teams_colors(session:Session, year=None):
     try: 
         teams = session.exec(select(distinct(SessionDriver.team)))
         existing_teams_query = session.exec(select(Teams.name))
@@ -310,27 +385,29 @@ def update_db():
     Controls the flow to update the database, calling all necessary methods.
     """
     with Session(engine) as session:
-        latest_session_date = fetch_latest_session(session)
-
-        if latest_session_date:
-            url = URL_BASE + f'sessions?date_start>={latest_session_date}'
-        # if this is the first time populating the script (no latest session in db), get all sessions
-        else:
-            url = URL_BASE + f'sessions'
-        data = get_data(url)
-
+        data_url = ""
         try:
-            add_meetings_to_db(session)
+            latest_session= fetch_latest_session(session)
+
+            if latest_session:
+                data_url = URL_BASE + f'sessions?date_start>={latest_session.date}'
+            # if this is the first time populating the script (no latest session in db), get all sessions and meetings
+            else:
+                data_url = URL_BASE + 'sessions'
+                add_meetings_to_db(session)
+                add_teams_colors(session)
             session.commit()
         except Exception as e:
-            logger.error(f"Failed to add meetings to db. Error: {e}")
+            logger.error(f"Failed to fetch data: {e}")
 
+        data = get_data(data_url)
         data_size = len(data)
-        c= 0
+        c = 0
         for f1session in data:
             try:
                 with session.begin():
                     session_key = f1session['session_key']
+                    add_current_meeting(session, f1session['meeting_key'])
                     add_session_to_db(session, f1session)
                     add_all_laps_for_session(session, session_key)
                     add_session_result_to_db(session, session_key)
@@ -342,7 +419,6 @@ def update_db():
                     exc_info=True,
                 )
                 break
-        add_teams_colors(session)
 
 if __name__ == "__main__":
     from .database import create_db_and_tables

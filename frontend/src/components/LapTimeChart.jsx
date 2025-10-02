@@ -346,7 +346,7 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error, team
 								aria-hidden="true"
 								style={{ visibility: excludeOutliers && outlierCount > 0 ? "visible" : "hidden" }}
 							>
-								 (hidden)
+								(hidden)
 							</span>
 						</div>
 					</div>
@@ -373,11 +373,11 @@ export const LapTimeChart = ({ selectedDrivers, driverLaps, loading, error, team
 							display: "block",
 						}}
 					>
-							<LineChart
-								width={chartInnerWidth}
-								height={isSmallPhone ? 260 : isMobile ? 300 : 460}
+						<LineChart
+							width={chartInnerWidth}
+							height={isSmallPhone ? 260 : isMobile ? 300 : 460}
 							data={displayData}
-								margin={{ top: isMobile ? 12 : 20, right: isMobile ? 20 : 30, left: isMobile ? 32 : 40, bottom: isMobile ? 12 : 20 }}
+							margin={{ top: isMobile ? 12 : 20, right: isMobile ? 20 : 30, left: isMobile ? 32 : 40, bottom: isMobile ? 12 : 20 }}
 						>
 							<CartesianGrid strokeDasharray="3 3" strokeOpacity={0.15} />
 

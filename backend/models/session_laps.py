@@ -1,7 +1,7 @@
 from typing import Optional
 
 from sqlalchemy import UniqueConstraint
-from sqlmodel import SQLModel, Field, null
+from sqlmodel import SQLModel, Field
 
 """
 Database model that represents a Lap a driver completed in a session.

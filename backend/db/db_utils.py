@@ -18,7 +18,7 @@ logging.basicConfig(
 
 SessionDep = Annotated[Session, Depends(get_session)]
 URL_BASE = "https://api.openf1.org/v1/"
-FALLBACK_COMPOUND = "Not provided"
+FALLBACK_COMPOUND = "UNKNOWN"
 
 def get_data(url: str, retries: int = 5, backoff: float = 1.0):
     """
@@ -84,6 +84,8 @@ def map_stints_laps(stints: list[dict]):
     :return: Dictionary containing the lap-to-compound mapping.
     """
     stints_hashmap = {}
+    if not stints:
+        return {}
     for stint in stints:
         lap_start = stint.get('lap_start')
         lap_end = stint.get('lap_end')
