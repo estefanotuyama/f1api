@@ -23,10 +23,10 @@ def read_driver_session_laps(session:SessionDep, session_key:int, driver_number:
         headshot_url=driver.headshot_url,
         laps = [
             LapRead(
-                lap_number=lap.lap_number,
-                time = lap.lap_time,
-                speed_trap= lap.st_speed,
-                is_pit_out_lap=lap.is_pit_out_lap,
+                lap_number=lap.lap_number or 0,
+                time = lap.lap_time or 0.0,
+                speed_trap= lap.st_speed or 0,
+                is_pit_out_lap=lap.is_pit_out_lap or False,
                 compound=lap.compound or FALLBACK_COMPOUND
             )
             for lap in laps
